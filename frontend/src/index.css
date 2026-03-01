@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-AgriNiti-bg text-AgriNiti-text antialiased;
+}
+
+.AgriNiti-card {
+  @apply bg-AgriNiti-surface rounded-xl-card shadow-soft-card border border-AgriNiti-border;
+}
+
+.AgriNiti-input {
+  @apply w-full rounded-lg border border-AgriNiti-border bg-white px-4 py-3 text-base text-AgriNiti-text placeholder:text-AgriNiti-text-muted focus:outline-none focus:ring-2 focus:ring-AgriNiti-primary focus:border-transparent;
+}
+
+.AgriNiti-btn-primary {
+  @apply inline-flex items-center justify-center rounded-lg bg-AgriNiti-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-AgriNiti-primary-hover focus:outline-none focus:ring-2 focus:ring-AgriNiti-primary focus:ring-offset-2 focus:ring-offset-AgriNiti-bg disabled:opacity-60;
+}
+
+.AgriNiti-btn-secondary {
+  @apply inline-flex items-center justify-center rounded-lg border border-AgriNiti-border bg-white px-4 py-2 text-sm font-medium text-AgriNiti-text transition-colors hover:bg-AgriNiti-bg focus:outline-none focus:ring-2 focus:ring-AgriNiti-primary focus:ring-offset-2 focus:ring-offset-AgriNiti-bg disabled:opacity-60;
+}
+
+.AgriNiti-badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}

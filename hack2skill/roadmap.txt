@@ -1,0 +1,175 @@
+✅ Final Project Division — Team Kalgen
+👤 Person 1 — AI Advisory & Intelligence Lead
+
+(AgriBrain — Decision Engine)
+
+Ownership
+
+Build the AI farming intelligence system.
+
+Responsibilities
+
+Crop disease detection (image AI)
+
+Soil & crop analysis models
+
+Weather & yield prediction
+
+Government scheme intelligence
+
+LLM advisory reasoning
+
+Bedrock prompt engineering
+
+Advisory APIs
+
+Deliverable
+
+✅ Farmer query → intelligent farming recommendation.
+
+👤 Person 2 — Marketplace & Trust Engine Lead
+
+(TrustRank — Trade Engine)
+
+Ownership
+
+Build the trusted agricultural marketplace.
+
+Responsibilities
+
+Buyer–seller matching
+
+Trust re-ranking algorithm
+
+Verification logic (GST, history, behavior)
+
+Market price intelligence
+
+Logistics recommendation
+
+Trade history system
+
+Deliverable
+
+✅ Verified buyers + fair pricing system.
+
+👤 Person 3 — Multilingual Interaction Lead
+
+(Language Intelligence Layer)
+
+👉 Focused purely on language + interaction AI
+
+Ownership
+
+Make the platform language inclusive.
+
+Responsibilities
+
+Voice input handling
+
+Speech-to-text pipeline
+
+Real-time translation workflows
+
+Text-to-speech responses
+
+Conversation orchestration
+
+Language normalization layer
+
+Connect AI outputs → user language
+
+Tech Stack
+
+Amazon Transcribe
+
+Amazon Translate
+
+Amazon Polly
+
+NLP pipelines
+
+Conversation handling APIs
+
+Deliverable
+
+✅ Any user speaks any language → system understands and responds.
+
+👤 Person 4 — UI/UX Integration, Backend & Deployment Lead
+
+(System Architect / Platform Owner)
+
+👉 THIS PERSON OWNS THE PRODUCT END-TO-END
+
+Ownership
+
+Turn all components into one working application.
+
+Responsibilities
+UI/UX
+
+Complete frontend implementation
+
+React UI architecture
+
+Dashboards & screens
+
+Marketplace interface
+
+Advisory views
+
+Trust visualization
+
+Image upload workflows
+
+Integration
+
+Connect AI Advisory + Marketplace + Language services
+
+API orchestration
+
+Data flow coordination
+
+Backend
+
+FastAPI services
+
+API Gateway setup
+
+Authentication & session management
+
+Database integration
+
+Deployment
+
+AWS deployment
+
+Lambda workflows
+
+S3 storage
+
+Event-driven pipelines
+
+Monitoring & CI/CD
+
+Tech Stack
+
+React + TypeScript
+
+FastAPI
+
+Docker
+
+AWS Lambda
+
+API Gateway
+
+S3
+
+EventBridge
+
+CloudWatch
+
+Deliverable
+
+✅ Fully integrated live deployed platform demo.
