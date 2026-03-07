@@ -1,5 +1,7 @@
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
+import { useState, useEffect } from 'react';
+import { useTranslation } from '../services/useTranslation';
 
 const schemes = [
   {
@@ -23,28 +25,45 @@ const schemes = [
 ];
 
 export function SchemesPage() {
+  const { label, t } = useTranslation();
+  const [translatedSchemes, setTranslatedSchemes] = useState(schemes);
+
+  useEffect(() => {
+    const translateContent = async () => {
+      const translated = await Promise.all(
+        schemes.map(async (s) => ({
+          ...s,
+          name: await t(s.name),
+          explanation: await t(s.explanation),
+          deadline: await t(s.deadline),
+        }))
+      );
+      setTranslatedSchemes(translated);
+    };
+    translateContent();
+  }, [t]);
+
   return (
     <div className="space-y-8">
       <header className="flex items-start justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-semibold text-AgriNiti-text">Government schemes</h2>
+          <h2 className="text-2xl font-semibold text-AgriNiti-text">{label('schemesPageTitle')}</h2>
           <p className="mt-2 text-base text-AgriNiti-text-muted max-w-3xl">
-            View schemes you are likely eligible for, understand them in simple language, and get
-            guided support to complete applications on time.
+            {label('schemesPageSubtitle')}
           </p>
         </div>
       </header>
 
-      <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)] gap-6">
         <Card className="p-6 space-y-5">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-AgriNiti-text-muted uppercase tracking-[0.18em]">
-              Eligible schemes
+              {label('eligibleSchemesTitle')}
             </p>
-            <Badge tone="info">{schemes.length} programs found</Badge>
+            <Badge tone="info">{translatedSchemes.length} {label('programsFound')}</Badge>
           </div>
           <div className="space-y-5">
-            {schemes.map((scheme) => (
+            {translatedSchemes.map((scheme) => (
               <div
                 key={scheme.name}
                 className="rounded-2xl border border-AgriNiti-border px-5 py-4 hover:border-AgriNiti-primary/50 transition-colors"
@@ -56,12 +75,12 @@ export function SchemesPage() {
                       {scheme.explanation}
                     </p>
                     <p className="mt-3 text-sm text-AgriNiti-neutral">
-                      Application window · {scheme.deadline}
+                      {label('appWindow')} · {scheme.deadline}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <Badge tone={scheme.eligible ? 'success' : 'warning'}>
-                      {scheme.eligible ? 'Likely eligible' : 'Check eligibility'}
+                      {scheme.eligible ? label('likelyEligible') : label('checkEligibility')}
                     </Badge>
                   </div>
                 </div>
@@ -73,41 +92,36 @@ export function SchemesPage() {
         <div className="space-y-6">
           <Card className="p-6">
             <p className="text-sm font-medium text-AgriNiti-text-muted uppercase tracking-[0.18em]">
-              Apply assistance
+              {label('applyAssistanceTitle')}
             </p>
             <ol className="mt-5 space-y-4 text-sm text-AgriNiti-text">
               <li>
-                <span className="font-semibold">1. Confirm basic details</span> – land records,
-                bank account and Aadhaar mapping.
+                <span className="font-semibold">{label('applyTitle1')}</span> – {label('applyStep1')}
               </li>
               <li>
-                <span className="font-semibold">2. Collect supporting documents</span> – pattadar
-                passbook, ID proofs, and recent photographs.
+                <span className="font-semibold">{label('applyTitle2')}</span> – {label('applyStep2')}
               </li>
               <li>
-                <span className="font-semibold">3. Visit nearest facilitation center</span> – CSC,
-                PACS or agri office for assisted application.
+                <span className="font-semibold">{label('applyTitle3')}</span> – {label('applyStep3')}
               </li>
               <li>
-                <span className="font-semibold">4. Track status regularly</span> – note application
-                ID and check for messages or calls.
+                <span className="font-semibold">{label('applyTitle4')}</span> – {label('applyStep4')}
               </li>
             </ol>
           </Card>
 
           <Card className="p-6">
             <p className="text-sm font-medium text-AgriNiti-text-muted uppercase tracking-[0.18em]">
-              Form guidance
+              {label('formGuidanceTitle')}
             </p>
             <p className="mt-3 text-sm text-AgriNiti-text-muted">
-              This section walks you through typical questions asked in government forms so you can
-              prepare responses calmly before visiting any office or kiosk.
+              {label('formGuidanceDesc')}
             </p>
             <ul className="mt-4 space-y-3 text-sm text-AgriNiti-text">
-              <li>• Personal and family details</li>
-              <li>• Landholding and tenancy information</li>
-              <li>• Crop patterns and seasons</li>
-              <li>• Existing loans, insurance and support received</li>
+              <li>• {label('formPoint1')}</li>
+              <li>• {label('formPoint2')}</li>
+              <li>• {label('formPoint3')}</li>
+              <li>• {label('formPoint4')}</li>
             </ul>
           </Card>
         </div>
@@ -115,4 +129,3 @@ export function SchemesPage() {
     </div>
   );
 }
-

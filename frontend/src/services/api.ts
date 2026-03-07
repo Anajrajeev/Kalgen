@@ -55,9 +55,12 @@ class ApiClient {
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
+
+    if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (this.token) {
       headers.Authorization = `Bearer ${this.token}`;
@@ -103,8 +106,12 @@ class ApiClient {
     return this.request<User>('/auth/me');
   }
 
-  async getUsername(): Promise<ApiResponse<{username: string, email: string}>> {
-    return this.request<{username: string, email: string}>('/auth/username');
+  async getUserById(userId: string): Promise<ApiResponse<User>> {
+    return this.request<User>(`/auth/users/${userId}`);
+  }
+
+  async getUsername(): Promise<ApiResponse<{ username: string, email: string }>> {
+    return this.request<{ username: string, email: string }>('/auth/username');
   }
 
   async updateCurrentUser(updateData: Partial<User>): Promise<ApiResponse<User>> {
@@ -116,6 +123,56 @@ class ApiClient {
 
   async healthCheck(): Promise<ApiResponse<{ status: string }>> {
     return this.request<{ status: string }>('/health');
+  }
+
+  async getMarketplaceStats(): Promise<ApiResponse<any>> {
+    return this.request<any>('/v1/marketplace/stats');
+  }
+
+  async getListings(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/v1/marketplace/listings');
+  }
+
+  async createListing(listingData: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/v1/marketplace/listings', {
+      method: 'POST',
+      body: JSON.stringify(listingData),
+    });
+  }
+
+  // Chat Endpoints
+  async getConversations(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/v1/chat/conversations');
+  }
+
+  async getChatHistory(receiverId: string): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>(`/v1/chat/history/${receiverId}`);
+  }
+
+  async sendMessage(msgData: { receiver_id: string, content: string, target_language: string }): Promise<ApiResponse<any>> {
+    return this.request<any>('/v1/chat/send', {
+      method: 'POST',
+      body: JSON.stringify(msgData),
+    });
+  }
+
+  // Voice/Speech Endpoints
+  async textToSpeech(text: string, languageCode: string): Promise<ApiResponse<{ audio_url?: string, audio_base64?: string }>> {
+    return this.request<any>('/tts/synthesize', {
+      method: 'POST',
+      body: JSON.stringify({ text, language_code: languageCode }),
+    });
+  }
+
+  async speechToText(audioData: Blob, languageCode: string): Promise<ApiResponse<{ text: string }>> {
+    const formData = new FormData();
+    formData.append('file', audioData);
+    // Note: Request method in ApiClient needs adjustment for FormData, but for now assuming JSON.
+    return this.request<any>(`/transcribe?language_code=${languageCode}`, {
+      method: 'POST',
+      body: formData,
+      headers: {} // Let browser set Content-Type for FormData
+    });
   }
 }
 

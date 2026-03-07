@@ -2,32 +2,30 @@ import { ImageIcon, Mic, SendHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { useLanguageStore } from '../../store/languageStore';
-import { labels } from '../../i18n/labels';
+import { useTranslation } from '../../services/useTranslation';
 
 interface AskAIPanelProps {
   onChatStart?: () => void;
 }
 
 export function AskAIPanel({ onChatStart }: AskAIPanelProps) {
-  const lang = useLanguageStore((s) => s.selectedLanguage);
-  const copy = labels[lang];
+  const { label, t } = useTranslation();
   const [query, setQuery] = useState('');
-  const [response, setResponse] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Array<{type: 'user' | 'ai', content: string}>>([]);
+  const [messages, setMessages] = useState<Array<{ type: 'user' | 'ai', content: string }>>([]);
 
-  const handleAsk = () => {
+  const handleAsk = async () => {
     if (!query.trim()) return;
     onChatStart?.();
-    
+
     // Add user message
     const userMessage = query.trim();
     setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
-    
+
     // Add AI response
     const aiResponse = 'Demo response: Based on your description, AgriNiti would summarize key risks, recommend actions, and highlight relevant schemes or market moves here.';
-    setMessages(prev => [...prev, { type: 'ai', content: aiResponse }]);
-    
+    const translatedResponse = await t(aiResponse);
+    setMessages(prev => [...prev, { type: 'ai', content: translatedResponse }]);
+
     setQuery('');
   };
 
@@ -38,25 +36,27 @@ export function AskAIPanel({ onChatStart }: AskAIPanelProps) {
     }
   };
 
-  const handleVoiceQuery = () => {
+  const handleVoiceQuery = async () => {
     onChatStart?.();
     const aiResponse = 'Listening (demo): In a real deployment, AgriNiti would capture your voice, transcribe it, and respond in your selected language.';
-    setMessages(prev => [...prev, { type: 'ai', content: aiResponse }]);
+    const translatedResponse = await t(aiResponse);
+    setMessages(prev => [...prev, { type: 'ai', content: translatedResponse }]);
   };
 
-  const handleImageUpload = () => {
+  const handleImageUpload = async () => {
     onChatStart?.();
     const aiResponse = 'Image upload (demo): AgriNiti would analyze crop images for stress, disease or growth patterns.';
-    setMessages(prev => [...prev, { type: 'ai', content: aiResponse }]);
+    const translatedResponse = await t(aiResponse);
+    setMessages(prev => [...prev, { type: 'ai', content: translatedResponse }]);
   };
 
   return (
     <Card className="p-6 h-full flex flex-col">
       <header className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-AgriNiti-text">{copy.askAiTitle}</h2>
+          <h2 className="text-xl font-semibold text-AgriNiti-text">{label('askAiTitle')}</h2>
           <p className="mt-2 text-sm text-AgriNiti-text-muted">
-            Central hub to ask questions, share photos and get instant intelligence.
+            {label('askAiDescription')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -66,7 +66,7 @@ export function AskAIPanel({ onChatStart }: AskAIPanelProps) {
             onClick={handleVoiceQuery}
           >
             <Mic className="h-5 w-5" />
-            <span>Voice query</span>
+            <span>{label('voiceQuery')}</span>
           </Button>
           <Button
             type="button"
@@ -75,7 +75,7 @@ export function AskAIPanel({ onChatStart }: AskAIPanelProps) {
             onClick={handleImageUpload}
           >
             <ImageIcon className="h-5 w-5" />
-            <span>Upload image</span>
+            <span>{label('uploadImage')}</span>
           </Button>
         </div>
       </header>
@@ -88,25 +88,24 @@ export function AskAIPanel({ onChatStart }: AskAIPanelProps) {
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                  message.type === 'user'
-                    ? 'bg-AgriNiti-primary text-white'
-                    : 'bg-AgriNiti-bg/80 border border-dashed border-AgriNiti-accent-blue/40 text-AgriNiti-text'
-                }`}
+                className={`max-w-[70%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${message.type === 'user'
+                  ? 'bg-AgriNiti-primary text-white'
+                  : 'bg-AgriNiti-bg/80 border border-dashed border-AgriNiti-accent-blue/40 text-AgriNiti-text'
+                  }`}
               >
                 {message.content}
               </div>
             </div>
           ))}
         </div>
-        
+
         <div className="relative">
           <textarea
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             className="AgriNiti-input min-h-[80px] max-h-48 resize-none pr-12 text-base"
-            placeholder={copy.askAiPlaceholder}
+            placeholder={label('askAiPlaceholder')}
           />
           <button
             type="button"

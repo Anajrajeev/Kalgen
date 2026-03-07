@@ -18,6 +18,7 @@ type LanguageCardConfig = {
 const LANGUAGES: LanguageCardConfig[] = [
   { code: 'en', title: 'English', native: 'English' },
   { code: 'hi', title: 'Hindi', native: 'हिंदी' },
+  { code: 'mr', title: 'Marathi', native: 'मराठी' },
   { code: 'kn', title: 'Kannada', native: 'ಕನ್ನಡ' },
   { code: 'ta', title: 'Tamil', native: 'தமிழ்' },
   { code: 'te', title: 'Telugu', native: 'తెలుగు' },
@@ -57,24 +58,32 @@ export function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    /* API calls temporarily deactivated
     if (isRegistering) {
       // Handle registration
       await register({
         email: formData.email,
         password: formData.password,
         full_name: formData.full_name,
-        preferred_language: 'en'
+        preferred_language: selectedLanguage
       });
+      // Registration calls login automatically in authStore
     } else {
       // Handle login
       await login({
         username: formData.email,
         password: formData.password
       });
+
+      // Once login finishes, we have a user in the store. 
+      // If our chosen language differs from the profile, update it.
+      const state = useAuthStore.getState();
+      if (state.isAuthenticated && state.user && state.user.id) {
+        if (state.user.preferred_language !== selectedLanguage) {
+          await useAuthStore.getState().updateUser({ preferred_language: selectedLanguage });
+        }
+        navigate('/dashboard');
+      }
     }
-    */
-    navigate('/dashboard');
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -83,9 +92,13 @@ export function LoginPage() {
       email: formData.email,
       password: formData.password,
       full_name: formData.full_name,
-      preferred_language: 'en'
+      preferred_language: selectedLanguage
     });
-    navigate('/dashboard');
+    // authStore handles login inside register
+    const state = useAuthStore.getState();
+    if (state.isAuthenticated) {
+      navigate('/dashboard');
+    }
   };
 
   return (
@@ -104,8 +117,8 @@ export function LoginPage() {
                 type="button"
                 onClick={() => handleLanguageClick(lang.code)}
                 className={`group flex flex-col items-start justify-between rounded-2xl border px-6 py-5 text-left shadow-sm transition-all ${isActive
-                    ? 'border-AgriNiti-primary bg-white shadow-soft-card'
-                    : 'border-AgriNiti-border bg-AgriNiti-surface hover:border-AgriNiti-primary/60 hover:bg-white'
+                  ? 'border-AgriNiti-primary bg-white shadow-soft-card'
+                  : 'border-AgriNiti-border bg-AgriNiti-surface hover:border-AgriNiti-primary/60 hover:bg-white'
                   }`}
               >
                 <div>

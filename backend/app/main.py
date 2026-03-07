@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.routers import auth
+from app.routers import auth, translation, page_content, marketplace, chat
+from app.middleware import LanguageMiddleware
 
 app = FastAPI(
     title="AgriNiti API",
@@ -19,8 +20,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add language detection middleware
+app.add_middleware(LanguageMiddleware)
+
 # Include routers
 app.include_router(auth.router)
+app.include_router(translation.router)
+app.include_router(page_content.router)
+app.include_router(marketplace.router)
+app.include_router(chat.router)
 
 @app.get("/")
 async def root():

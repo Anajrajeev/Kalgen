@@ -1,0 +1,97 @@
+{
+  "region": "Karnataka",
+  "year": 2026,
+  "unit": "INR_per_quintal",
+  "weekly_crop_price_prediction": [
+    {
+      "week": 1,
+      "paddy": 2120,
+      "ragi": 3280,
+      "maize": 1980,
+      "jowar": 3120,
+      "green_gram": 7250,
+      "banana": 1480
+    },
+    {
+      "week": 6,
+      "paddy": 2150,
+      "ragi": 3300,
+      "maize": 2000,
+      "jowar": 3150,
+      "green_gram": 7300,
+      "banana": 1500
+    },
+    {
+      "week": 12,
+      "paddy": 2180,
+      "ragi": 3320,
+      "maize": 2020,
+      "jowar": 3180,
+      "green_gram": 7350,
+      "banana": 1520
+    },
+    {
+      "week": 18,
+      "paddy": 2140,
+      "ragi": 3290,
+      "maize": 1980,
+      "jowar": 3140,
+      "green_gram": 7200,
+      "banana": 1490
+    },
+    {
+      "week": 24,
+      "paddy": 2100,
+      "ragi": 3250,
+      "maize": 1950,
+      "jowar": 3100,
+      "green_gram": 7100,
+      "banana": 1450
+    },
+    {
+      "week": 30,
+      "paddy": 2080,
+      "ragi": 3220,
+      "maize": 1930,
+      "jowar": 3080,
+      "green_gram": 7050,
+      "banana": 1420
+    },
+    {
+      "week": 36,
+      "paddy": 2120,
+      "ragi": 3270,
+      "maize": 1970,
+      "jowar": 3110,
+      "green_gram": 7150,
+      "banana": 1480
+    },
+    {
+      "week": 42,
+      "paddy": 2180,
+      "ragi": 3330,
+      "maize": 2030,
+      "jowar": 3180,
+      "green_gram": 7300,
+      "banana": 1550
+    },
+    {
+      "week": 48,
+      "paddy": 2220,
+      "ragi": 3380,
+      "maize": 2070,
+      "jowar": 3220,
+      "green_gram": 7450,
+      "banana": 1600
+    },
+    {
+      "week": 52,
+      "paddy": 2250,
+      "ragi": 3400,
+      "maize": 2100,
+      "jowar": 3250,
+      "green_gram": 7500,
+      "banana": 1650
+    }
+  ]
+}

@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { ArrowLeft, MessageCircle, Star, MapPin, Package, TrendingUp } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Star, MapPin, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../services/useTranslation';
+import { apiClient } from '../services/api';
 
 interface Seller {
-  id: number;
+  id: string;
+  userId: string;
   name: string;
   location: string;
   distance: string;
@@ -20,85 +23,62 @@ interface Seller {
   verified: boolean;
 }
 
-const sellers: Seller[] = [
-  {
-    id: 1,
-    name: 'GreenField Farms',
-    location: 'Nashik, Maharashtra',
-    distance: '45 km',
-    rating: 4.8,
-    totalSales: 1247,
-    responseTime: '1.2 hrs',
-    produce: 'Tur / Arhar',
-    quantity: '150 qtl',
-    price: '₹7,100 / qtl',
-    quality: 'Premium',
-    verified: true
-  },
-  {
-    id: 2,
-    name: 'Shree Krishna Traders',
-    location: 'Pune, Maharashtra',
-    distance: '78 km',
-    rating: 4.6,
-    totalSales: 892,
-    responseTime: '2.1 hrs',
-    produce: 'Tur / Arhar',
-    quantity: '200 qtl',
-    price: '₹7,050 / qtl',
-    quality: 'Standard',
-    verified: true
-  },
-  {
-    id: 3,
-    name: 'Organic Harvest Co.',
-    location: 'Ahmednagar, Maharashtra',
-    distance: '120 km',
-    rating: 4.9,
-    totalSales: 634,
-    responseTime: '0.8 hrs',
-    produce: 'Tur / Arhar',
-    quantity: '80 qtl',
-    price: '₹7,250 / qtl',
-    quality: 'Premium',
-    verified: true
-  },
-  {
-    id: 4,
-    name: 'Vasudha Agro',
-    location: 'Satara, Maharashtra',
-    distance: '95 km',
-    rating: 4.4,
-    totalSales: 445,
-    responseTime: '3.2 hrs',
-    produce: 'Maize',
-    quantity: '300 qtl',
-    price: '₹2,180 / qtl',
-    quality: 'Standard',
-    verified: false
-  },
-  {
-    id: 5,
-    name: 'Progressive Farmers Group',
-    location: 'Kolhapur, Maharashtra',
-    distance: '156 km',
-    rating: 4.7,
-    totalSales: 1567,
-    responseTime: '1.5 hrs',
-    produce: 'Maize',
-    quantity: '250 qtl',
-    price: '₹2,150 / qtl',
-    quality: 'Premium',
-    verified: true
-  }
-];
+const sellers: Seller[] = [];
 
 export function BrowseProducePage() {
   const navigate = useNavigate();
+  const { label } = useTranslation();
+  const [listingSellers, setListingSellers] = useState<Seller[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    available_produce: '5,421',
+    verified_sellers: '3,892',
+    quality_score: '4.7/5'
+  });
 
-  const handleMessageSeller = (sellerId: number, sellerName: string) => {
-    // Navigate to a chat page with the seller
-    navigate(`/chat/${sellerId}`, { state: { sellerName } });
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [statsRes, listingsRes] = await Promise.all([
+          apiClient.getMarketplaceStats(),
+          apiClient.getListings()
+        ]);
+
+        if (statsRes.data) {
+          setStats(statsRes.data);
+        }
+
+        if (listingsRes.data) {
+          const mappedSellers: Seller[] = listingsRes.data.map((l: any, index: number) => ({
+            id: l.id || `listing-${index}`,
+            userId: l.user_id || `farmer-${index}`,
+            name: l.marketplace_profiles?.business_name || 'Farmer ' + (index + 1),
+            location: l.location,
+            distance: 'Unknown', // In real app, calculate distance from l.marketplace_profiles?.location
+            rating: l.marketplace_profiles?.rating || 4.5,
+            totalSales: l.marketplace_profiles?.total_sales || 100,
+            responseTime: l.marketplace_profiles?.avg_response_time_hrs ? `${l.marketplace_profiles.avg_response_time_hrs} hrs` : '2.0 hrs',
+            produce: l.produce_name,
+            quantity: `${l.quantity} ${l.unit}`,
+            price: l.expected_price,
+            quality: 'Standard', // Mocked quality
+            verified: l.marketplace_profiles?.is_verified || false
+          }));
+          setListingSellers(mappedSellers);
+        }
+      } catch (err) {
+        console.error("Fetch listings error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleMessageSeller = (sellerId: string, sellerName: string) => {
+    // Navigate to negotiation page with the seller
+    navigate('/negotiation', { state: { sellerId, sellerName } });
   };
 
   const getQualityColor = (quality: string) => {
@@ -129,32 +109,48 @@ export function BrowseProducePage() {
                 <Package className="h-5 w-5 text-AgriNiti-accent-blue" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-AgriNiti-text">Browse Produce</h1>
-                <p className="text-sm text-AgriNiti-text-muted">Connect with verified sellers across India</p>
+                <h1 className="text-2xl font-bold text-AgriNiti-text">{label('browseProduceTitle')}</h1>
+                <p className="text-sm text-AgriNiti-text-muted">{label('browseProduceSubtitle')}</p>
               </div>
             </div>
           </div>
-          
+
           {/* Stats */}
           <div className="flex items-center gap-6">
             <div className="text-center">
-              <div className="text-lg font-bold text-AgriNiti-text">5,421</div>
-              <div className="text-xs text-AgriNiti-text-muted">Available</div>
+              <div className="text-lg font-bold text-AgriNiti-text">{stats.available_produce}</div>
+              <div className="text-xs text-AgriNiti-text-muted">{label('available')}</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-AgriNiti-text">3,892</div>
-              <div className="text-xs text-AgriNiti-text-muted">Verified Sellers</div>
+              <div className="text-lg font-bold text-AgriNiti-text">{stats.verified_sellers}</div>
+              <div className="text-xs text-AgriNiti-text-muted">{label('verifiedSellers')}</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-AgriNiti-text">4.7/5</div>
-              <div className="text-xs text-AgriNiti-text-muted">Avg Quality</div>
+              <div className="text-lg font-bold text-AgriNiti-text">{stats.quality_score}</div>
+              <div className="text-xs text-AgriNiti-text-muted">{label('qualityScore')}</div>
             </div>
           </div>
         </div>
 
         {/* Sellers Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {sellers.map((seller) => (
+          {loading ? (
+            <div className="col-span-full py-20 text-center">
+              <div className="animate-spin h-10 w-10 border-4 border-AgriNiti-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-AgriNiti-text-muted">Loading produce listings...</p>
+            </div>
+          ) : listingSellers.length === 0 ? (
+            <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-AgriNiti-border/50">
+              <Package className="h-12 w-12 text-AgriNiti-text-muted mx-auto mb-4 opacity-50" />
+              <p className="text-AgriNiti-text-muted">No produce listings found. Be the first to list yours!</p>
+              <Button
+                onClick={() => navigate('/list-produce')}
+                className="mt-4 bg-AgriNiti-accent-gold text-white"
+              >
+                List Your Produce
+              </Button>
+            </div>
+          ) : listingSellers.map((seller) => (
             <Card key={seller.id} className="p-6 hover:shadow-soft-card transition-all">
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
@@ -162,7 +158,7 @@ export function BrowseProducePage() {
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="text-lg font-semibold text-AgriNiti-text">{seller.name}</h3>
                     {seller.verified && (
-                      <Badge tone="success" className="text-xs">Verified</Badge>
+                      <Badge tone="success" className="text-xs">{label('sellerVerified')}</Badge>
                     )}
                   </div>
                   <div className="flex items-center gap-4 text-sm text-AgriNiti-text-muted">
@@ -186,19 +182,19 @@ export function BrowseProducePage() {
               {/* Produce Details */}
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-AgriNiti-text-muted">Produce</span>
+                  <span className="text-sm text-AgriNiti-text-muted">{label('produceLabel')}</span>
                   <span className="text-sm font-medium text-AgriNiti-text">{seller.produce}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-AgriNiti-text-muted">Available Quantity</span>
+                  <span className="text-sm text-AgriNiti-text-muted">{label('availableQuantity')}</span>
                   <span className="text-sm font-medium text-AgriNiti-text">{seller.quantity}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-AgriNiti-text-muted">Price</span>
+                  <span className="text-sm text-AgriNiti-text-muted">{label('priceHeader')}</span>
                   <span className="text-sm font-semibold text-AgriNiti-accent-blue">{seller.price}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-AgriNiti-text-muted">Distance</span>
+                  <span className="text-sm text-AgriNiti-text-muted">{label('distance')}</span>
                   <span className="text-sm font-medium text-AgriNiti-text">{seller.distance}</span>
                 </div>
               </div>
@@ -206,7 +202,7 @@ export function BrowseProducePage() {
               {/* Seller Stats */}
               <div className="grid grid-cols-3 gap-3 mb-4 p-3 bg-AgriNiti-bg/30 rounded-lg">
                 <div className="text-center">
-                  <div className="text-xs text-AgriNiti-text-muted">Sales</div>
+                  <div className="text-xs text-AgriNiti-text-muted">{label('sales')}</div>
                   <div className="text-sm font-semibold text-AgriNiti-text">{seller.totalSales}</div>
                 </div>
                 <div className="text-center">
@@ -224,16 +220,16 @@ export function BrowseProducePage() {
                 <Button
                   variant="secondary"
                   className="flex-1"
-                  onClick={() => navigate(`/seller/${seller.id}`)}
+                  onClick={() => navigate(`/seller/${seller.userId}`)}
                 >
-                  View Details
+                  {label('viewDetailsBtn')}
                 </Button>
                 <Button
                   className="flex-1 bg-AgriNiti-accent-blue hover:bg-AgriNiti-accent-blue/90 text-white"
-                  onClick={() => handleMessageSeller(seller.id, seller.name)}
+                  onClick={() => handleMessageSeller(seller.userId, seller.name)}
                 >
                   <MessageCircle className="h-4 w-4 mr-2" />
-                  Message them
+                  {label('messageSellerBtn')}
                 </Button>
               </div>
             </Card>
@@ -243,7 +239,7 @@ export function BrowseProducePage() {
         {/* Load More */}
         <div className="text-center mt-8">
           <Button variant="secondary" className="px-8">
-            Load More Sellers
+            {label('loadMoreBtn')}
           </Button>
         </div>
       </div>

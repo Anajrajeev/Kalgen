@@ -25,9 +25,9 @@ export function DashboardPage() {
             <WeatherWidget />
             <div className="text-sm text-AgriNiti-text-muted flex items-center justify-end">
               <div className="text-right">
-                <p className="font-medium text-AgriNiti-text">Today&apos;s farm snapshot</p>
+                <p className="font-medium text-AgriNiti-text">{copy.dashboardSnapshotTitle}</p>
                 <p className="mt-2">
-                  Weather · Prices · Schemes · AI — all starting from this dashboard.
+                  {copy.dashboardSnapshotSubtitle}
                 </p>
               </div>
             </div>

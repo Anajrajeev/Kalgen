@@ -24,16 +24,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
   persist(
     (set, get) => ({
       // State
-      user: {
-        id: '1',
-        email: 'guest@agripiti.com',
-        full_name: 'Guest Farmer',
-        preferred_language: 'en',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      token: 'fake-token',
-      isAuthenticated: true,
+      user: null,
+      token: null,
+      isAuthenticated: false,
       isLoading: false,
       error: null,
 

@@ -7,11 +7,11 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  // Authentication check temporarily deactivated
-  // const { isAuthenticated } = useAuthStore();
-  // if (!isAuthenticated) {
-  //   return <Navigate to="/login" replace />;
-  // }
+  const { isAuthenticated } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   return <>{children}</>;
 }

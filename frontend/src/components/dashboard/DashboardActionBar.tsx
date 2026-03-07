@@ -1,36 +1,40 @@
 import { AlertTriangle, IndianRupee, ScrollText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../ui/Card';
-
-const actions = [
-  {
-    id: 'crop-analysis',
-    title: 'Crop Analysis',
-    summary: 'Pest, disease and rainfall advisories for your fields.',
-    icon: AlertTriangle,
-    color: 'bg-AgriNiti-accent-gold/15 border-AgriNiti-accent-gold/40',
-    route: '/crop-analysis'
-  },
-  {
-    id: 'market-prices',
-    title: 'Market price highlights',
-    summary: 'Daily mandi & wholesale prices for your produce.',
-    icon: IndianRupee,
-    color: 'bg-AgriNiti-accent-blue/10 border-AgriNiti-accent-blue/40',
-    route: '/marketplace'
-  },
-  {
-    id: 'scheme-notes',
-    title: 'Government scheme notifications',
-    summary: 'Subsidies, insurance and support programs you may be eligible for.',
-    icon: ScrollText,
-    color: 'bg-AgriNiti-primary/5 border-AgriNiti-primary/40',
-    route: '/schemes'
-  }
-];
+import { useLanguageStore } from '../../store/languageStore';
+import { labels } from '../../i18n/labels';
 
 export function DashboardActionBar() {
   const navigate = useNavigate();
+  const lang = useLanguageStore((s) => s.selectedLanguage);
+  const copy = labels[lang];
+
+  const actions = [
+    {
+      id: 'crop-analysis',
+      title: copy.cropAnalysisTitle,
+      summary: copy.cropAnalysisSubTitle,
+      icon: AlertTriangle,
+      color: 'bg-AgriNiti-accent-gold/15 border-AgriNiti-accent-gold/40',
+      route: '/crop-analysis'
+    },
+    {
+      id: 'market-prices',
+      title: copy.marketPricesTitle,
+      summary: copy.marketPricesSubtitle,
+      icon: IndianRupee,
+      color: 'bg-AgriNiti-accent-blue/10 border-AgriNiti-accent-blue/40',
+      route: '/marketplace'
+    },
+    {
+      id: 'scheme-notes',
+      title: copy.schemesTitle,
+      summary: copy.schemesSubtitle,
+      icon: ScrollText,
+      color: 'bg-AgriNiti-primary/5 border-AgriNiti-primary/40',
+      route: '/schemes'
+    }
+  ];
 
   return (
     <div className="grid grid-cols-3 gap-6 mb-8">

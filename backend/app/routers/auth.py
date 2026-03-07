@@ -86,6 +86,20 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return user
 
 
+@router.get("/users/{user_id}", response_model=UserResponse)
+async def get_user_by_id(user_id: str, token: str = Depends(oauth2_scheme)):
+    """Get user information by ID"""
+    user = await UserService.get_user_by_id(user_id)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    return user
+
+
 @router.get("/username")
 async def get_username(token: str = Depends(oauth2_scheme)):
     """Get current username"""

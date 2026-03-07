@@ -1,24 +1,64 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
 import { ArrowLeft, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../services/useTranslation';
+import { apiClient } from '../services/api';
 
 export function ListProducePage() {
   const navigate = useNavigate();
+  const { label } = useTranslation();
   const [produce, setProduce] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState('qtl');
   const [expectedPrice, setExpectedPrice] = useState('');
   const [location, setLocation] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({
+    total_listings: '2,847',
+    active_buyers: '1,523',
+    avg_response_time: '2.3 hrs'
+  });
 
-  const handleSubmit = () => {
-    // Here you would typically send the data to your backend
-    console.log('Produce listing:', { produce, quantity, unit, expectedPrice, location });
-    
-    // Navigate to buyers page after successful listing
-    navigate('/buyers');
+  useEffect(() => {
+    const fetchStats = async () => {
+      const response = await apiClient.getMarketplaceStats();
+      if (response.data) {
+        setStats({
+          total_listings: response.data.total_listings,
+          active_buyers: response.data.active_buyers,
+          avg_response_time: response.data.avg_response_time
+        });
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!produce || !quantity || !expectedPrice || !location) return;
+
+    setLoading(true);
+    try {
+      const response = await apiClient.createListing({
+        produce_name: produce,
+        quantity: parseFloat(quantity),
+        unit: unit,
+        expected_price: expectedPrice,
+        location: location
+      });
+
+      if (response.data) {
+        // Successful listing
+        navigate('/buyers');
+      } else if (response.error) {
+        alert("Error creating listing: " + response.error);
+      }
+    } catch (err) {
+      console.error("Listing error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -136,10 +176,10 @@ export function ListProducePage() {
             <div className="pt-4">
               <Button
                 onClick={handleSubmit}
-                disabled={!produce || !quantity || !expectedPrice || !location}
-                className="w-full bg-AgriNiti-accent-gold hover:bg-AgriNiti-accent-gold/90 text-white py-3 text-base"
+                disabled={!produce || !quantity || !expectedPrice || !location || loading}
+                className="w-full bg-AgriNiti-accent-gold hover:bg-AgriNiti-accent-gold/90 text-white py-3 text-base disabled:opacity-50"
               >
-                List Your Produce
+                {loading ? 'Processing...' : label('listProduceBtn')}
               </Button>
             </div>
           </div>
@@ -148,16 +188,16 @@ export function ListProducePage() {
         {/* Additional Info */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-AgriNiti-accent-gold mb-1">2,847</div>
-            <div className="text-sm text-AgriNiti-text-muted">Active Listings</div>
+            <div className="text-2xl font-bold text-AgriNiti-accent-gold mb-1">{stats.total_listings}</div>
+            <div className="text-sm text-AgriNiti-text-muted">{label('activeListings')}</div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-AgriNiti-accent-blue mb-1">1,523</div>
-            <div className="text-sm text-AgriNiti-text-muted">Active Buyers</div>
+            <div className="text-2xl font-bold text-AgriNiti-accent-blue mb-1">{stats.active_buyers}</div>
+            <div className="text-sm text-AgriNiti-text-muted">{label('activeBuyers')}</div>
           </Card>
           <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-AgriNiti-primary mb-1">2.3 hrs</div>
-            <div className="text-sm text-AgriNiti-text-muted">Avg Response Time</div>
+            <div className="text-2xl font-bold text-AgriNiti-primary mb-1">{stats.avg_response_time}</div>
+            <div className="text-sm text-AgriNiti-text-muted">{label('avgResponseTime')}</div>
           </Card>
         </div>
       </div>

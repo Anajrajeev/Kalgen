@@ -1,12 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { apiClient } from '../services/api';
+import { useTranslation } from '../services/useTranslation';
 import { useNavigate } from 'react-router-dom';
-import { Search, TrendingUp, TrendingDown, Package, ShoppingCart, Truck, Plus } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, Package, ShoppingCart, Truck, Plus, MessageCircle } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { ListProducePage } from './ListProducePage';
-import { BrowseProducePage } from './BrowseProducePage';
-import { BusinessAssistancePage } from './TrackShipmentsPage';
 
 interface MarketPrice {
   crop: string;
@@ -28,25 +27,64 @@ const liveMarketPrices: MarketPrice[] = [
 
 export function MarketplacePage() {
   const navigate = useNavigate();
+  const { label, t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredPrices, setFilteredPrices] = useState(liveMarketPrices);
+  const [translatedPrices, setTranslatedPrices] = useState(liveMarketPrices);
+  const [stats, setStats] = useState({
+    total_listings: '2,847',
+    active_buyers: '1,523',
+    avg_response_time: '2.3 hrs',
+    available_produce: '5,421',
+    verified_sellers: '3,892',
+    quality_score: '4.7/5'
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const response = await apiClient.getMarketplaceStats();
+      if (response.data) {
+        setStats(response.data);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    const translateContent = async () => {
+      const translated = await Promise.all(
+        liveMarketPrices.map(async (p) => ({
+          ...p,
+          crop: await t(p.crop),
+          location: await t(p.location),
+          lastUpdated: await t(p.lastUpdated),
+        }))
+      );
+      setTranslatedPrices(translated);
+    };
+    translateContent();
+  }, [t]);
+
+  const [filteredPrices, setFilteredPrices] = useState(translatedPrices);
+
+  useEffect(() => {
+    const filtered = translatedPrices.filter(price =>
+      price.crop.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      price.location.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredPrices(filtered);
+  }, [searchQuery, translatedPrices]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    const filtered = liveMarketPrices.filter(price => 
-      price.crop.toLowerCase().includes(query.toLowerCase()) ||
-      price.location.toLowerCase().includes(query.toLowerCase())
-    );
-    setFilteredPrices(filtered);
   };
 
   return (
     <div className="space-y-8">
       <header className="flex items-start justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-semibold text-AgriNiti-text">Marketplace</h2>
+          <h2 className="text-2xl font-semibold text-AgriNiti-text">{label('marketplaceTitle')}</h2>
           <p className="mt-2 text-base text-AgriNiti-text-muted max-w-3xl">
-            Live market prices, sell your produce across India, and buy from farmers nationwide.
+            {label('marketplaceSubtitle')}
           </p>
         </div>
       </header>
@@ -62,11 +100,11 @@ export function MarketplacePage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                placeholder="Search for crops or locations..."
+                placeholder={label('searchCropsPlaceholder')}
                 className="w-full pl-10 pr-4 py-3 border border-AgriNiti-border/50 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-AgriNiti-primary/50"
               />
             </div>
-            <Badge tone="info">Live Prices</Badge>
+            <Badge tone="info">{label('livePrices')}</Badge>
           </div>
         </Card>
 
@@ -85,9 +123,8 @@ export function MarketplacePage() {
                   ) : (
                     <TrendingDown className="h-4 w-4 text-AgriNiti-error" />
                   )}
-                  <span className={`text-sm font-medium ${
-                    price.direction === 'up' ? 'text-AgriNiti-success' : 'text-AgriNiti-error'
-                  }`}>
+                  <span className={`text-sm font-medium ${price.direction === 'up' ? 'text-AgriNiti-success' : 'text-AgriNiti-error'
+                    }`}>
                     {price.change}
                   </span>
                 </div>
@@ -96,7 +133,7 @@ export function MarketplacePage() {
                 {price.price}
               </div>
               <p className="text-xs text-AgriNiti-text-muted">
-                Updated {price.lastUpdated}
+                {label('lastUpdated')} {price.lastUpdated}
               </p>
             </Card>
           ))}
@@ -104,16 +141,16 @@ export function MarketplacePage() {
 
         {/* All Market Prices Table */}
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-AgriNiti-text mb-4">All Market Prices</h3>
+          <h3 className="text-lg font-semibold text-AgriNiti-text mb-4">{label('allMarketPricesTitle')}</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-AgriNiti-border/50">
-                  <th className="text-left py-3 px-4 font-medium text-AgriNiti-text-muted">Crop</th>
-                  <th className="text-left py-3 px-4 font-medium text-AgriNiti-text-muted">Location</th>
-                  <th className="text-right py-3 px-4 font-medium text-AgriNiti-text-muted">Price</th>
-                  <th className="text-right py-3 px-4 font-medium text-AgriNiti-text-muted">Change</th>
-                  <th className="text-right py-3 px-4 font-medium text-AgriNiti-text-muted">Last Updated</th>
+                  <th className="text-left py-3 px-4 font-medium text-AgriNiti-text-muted">{label('cropHeader')}</th>
+                  <th className="text-left py-3 px-4 font-medium text-AgriNiti-text-muted">{label('locationHeader')}</th>
+                  <th className="text-right py-3 px-4 font-medium text-AgriNiti-text-muted">{label('priceHeader')}</th>
+                  <th className="text-right py-3 px-4 font-medium text-AgriNiti-text-muted">{label('changeHeader')}</th>
+                  <th className="text-right py-3 px-4 font-medium text-AgriNiti-text-muted">{label('lastUpdatedHeader')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -129,9 +166,8 @@ export function MarketplacePage() {
                         ) : (
                           <TrendingDown className="h-3 w-3 text-AgriNiti-error" />
                         )}
-                        <span className={`font-medium ${
-                          price.direction === 'up' ? 'text-AgriNiti-success' : 'text-AgriNiti-error'
-                        }`}>
+                        <span className={`font-medium ${price.direction === 'up' ? 'text-AgriNiti-success' : 'text-AgriNiti-error'
+                          }`}>
                           {price.change}
                         </span>
                       </div>
@@ -155,35 +191,45 @@ export function MarketplacePage() {
                 <Package className="h-6 w-6 text-AgriNiti-accent-gold" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-AgriNiti-text">SELL Across India</h3>
-                <p className="text-sm text-AgriNiti-text-muted">Reach buyers nationwide</p>
+                <h3 className="text-xl font-bold text-AgriNiti-text">{label('sellAcrossIndiaTitle')}</h3>
+                <p className="text-sm text-AgriNiti-text-muted">{label('reachBuyers')}</p>
               </div>
             </div>
-            <Badge tone="success">Active</Badge>
+            <Badge tone="success">{label('activeStatus')}</Badge>
           </div>
-          
+
           <div className="space-y-3 mb-4">
             <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">Total Listings</span>
-              <span className="font-semibold text-AgriNiti-text">2,847</span>
+              <span className="text-AgriNiti-text-muted">{label('totalListings')}</span>
+              <span className="font-semibold text-AgriNiti-text">{stats.total_listings}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">Active Buyers</span>
-              <span className="font-semibold text-AgriNiti-text">1,523</span>
+              <span className="text-AgriNiti-text-muted">{label('activeBuyers')}</span>
+              <span className="font-semibold text-AgriNiti-text">{stats.active_buyers}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">Avg. Response Time</span>
-              <span className="font-semibold text-AgriNiti-text">2.3 hrs</span>
+              <span className="text-AgriNiti-text-muted">{label('avgResponseTime')}</span>
+              <span className="font-semibold text-AgriNiti-text">{stats.avg_response_time}</span>
             </div>
           </div>
-          
-          <Button 
-            onClick={() => navigate('/list-produce')}
-            className="w-full bg-AgriNiti-accent-gold hover:bg-AgriNiti-accent-gold/90 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            List Your Produce
-          </Button>
+
+          <div className="flex gap-3">
+            <Button
+              onClick={() => navigate('/list-produce')}
+              className="flex-1 bg-AgriNiti-accent-gold hover:bg-AgriNiti-accent-gold/90 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              {label('listProduceBtn')}
+            </Button>
+            <Button
+              onClick={() => navigate('/enquiries')}
+              variant="secondary"
+              className="flex-1"
+            >
+              <MessageCircle className="h-4 w-4 mr-2" />
+              {label('enquiriesBtn')}
+            </Button>
+          </div>
         </Card>
 
         {/* BUY Across India Card */}
@@ -194,34 +240,34 @@ export function MarketplacePage() {
                 <ShoppingCart className="h-6 w-6 text-AgriNiti-accent-blue" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-AgriNiti-text">BUY Across India</h3>
-                <p className="text-sm text-AgriNiti-text-muted">Source from farmers directly</p>
+                <h3 className="text-xl font-bold text-AgriNiti-text">{label('buyAcrossIndiaTitle')}</h3>
+                <p className="text-sm text-AgriNiti-text-muted">{label('sourceDirectly')}</p>
               </div>
             </div>
-            <Badge tone="info">Active</Badge>
+            <Badge tone="info">{label('activeStatus')}</Badge>
           </div>
-          
+
           <div className="space-y-3 mb-4">
             <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">Available Produce</span>
-              <span className="font-semibold text-AgriNiti-text">5,421</span>
+              <span className="text-AgriNiti-text-muted">{label('availableProduce')}</span>
+              <span className="font-semibold text-AgriNiti-text">{stats.available_produce}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">Verified Sellers</span>
-              <span className="font-semibold text-AgriNiti-text">3,892</span>
+              <span className="text-AgriNiti-text-muted">{label('verifiedSellers')}</span>
+              <span className="font-semibold text-AgriNiti-text">{stats.verified_sellers}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">Quality Score</span>
-              <span className="font-semibold text-AgriNiti-text">4.7/5</span>
+              <span className="text-AgriNiti-text-muted">{label('qualityScore')}</span>
+              <span className="font-semibold text-AgriNiti-text">{stats.quality_score}</span>
             </div>
           </div>
-          
-          <Button 
+
+          <Button
             onClick={() => navigate('/browse-produce')}
             className="w-full bg-AgriNiti-accent-blue hover:bg-AgriNiti-accent-blue/90 text-white"
           >
             <Search className="h-4 w-4 mr-2" />
-            Browse Produce
+            {label('browseProduceBtn')}
           </Button>
         </Card>
       </div>
@@ -234,25 +280,24 @@ export function MarketplacePage() {
               <Truck className="h-7 w-7 text-AgriNiti-primary" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-AgriNiti-text">Bussiness Assisstance</h3>
-              <p className="text-sm text-AgriNiti-text-muted">Transport, storage, and delivery solutions</p>
+              <h3 className="text-xl font-bold text-AgriNiti-text">{label('businessAssistanceTitle')}</h3>
+              <p className="text-sm text-AgriNiti-text-muted">{label('businessAssistanceDesc')}</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm text-AgriNiti-text-muted">Active Shipments</p>
+              <p className="text-sm text-AgriNiti-text-muted">{label('activeShipments')}</p>
               <p className="text-2xl font-bold text-AgriNiti-text">147</p>
             </div>
-            <Button 
-            onClick={() => navigate('/business-assistance')}
-            className="bg-AgriNiti-primary hover:bg-AgriNiti-primary/90 text-white"
-          >
-            Manage Logistics
-          </Button>
+            <Button
+              onClick={() => navigate('/business-assistance')}
+              className="bg-AgriNiti-primary hover:bg-AgriNiti-primary/90 text-white"
+            >
+              {label('manageLogisticsBtn')}
+            </Button>
           </div>
         </div>
       </Card>
     </div>
   );
 }
-
