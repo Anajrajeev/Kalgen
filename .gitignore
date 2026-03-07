@@ -99,6 +99,8 @@ public
 # Temporary folders
 tmp/
 temp/
+*.zip
+*.tar.gz
 
 # Python specific (for backend)
 __pycache__/
@@ -211,6 +213,8 @@ dmypy.json
 *.db
 *.sqlite
 *.sqlite3
+*.db-shm
+*.db-wal
 
 # API keys and secrets
 config/secrets.json

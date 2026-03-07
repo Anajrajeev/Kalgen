@@ -1,35 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { apiClient } from '../services/api';
 import { useTranslation } from '../services/useTranslation';
 import { useNavigate } from 'react-router-dom';
-import { Search, TrendingUp, TrendingDown, Package, ShoppingCart, Truck, Plus, MessageCircle } from 'lucide-react';
+import { Search, TrendingUp, Package, ShoppingCart, Truck, Plus, MessageCircle, Filter, MapPin } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 
 interface MarketPrice {
-  crop: string;
-  price: string;
-  change: string;
-  direction: 'up' | 'down';
-  location: string;
-  lastUpdated: string;
+  commodity: string;
+  state: string;
+  district: string;
+  market: string;
+  min_price: number | string;
+  max_price: number | string;
+  modal_price: number | string;
+  arrival_date: string;
 }
-
-const liveMarketPrices: MarketPrice[] = [
-  { crop: 'Tur / Arhar', price: '₹7,200 / qtl', change: '+₹150', direction: 'up', location: 'Maharashtra', lastUpdated: '2 mins ago' },
-  { crop: 'Maize', price: '₹2,150 / qtl', change: '-₹60', direction: 'down', location: 'Karnataka', lastUpdated: '5 mins ago' },
-  { crop: 'Cotton', price: '₹7,450 / qtl', change: '+₹40', direction: 'up', location: 'Gujarat', lastUpdated: '3 mins ago' },
-  { crop: 'Wheat', price: '₹2,800 / qtl', change: '+₹25', direction: 'up', location: 'Punjab', lastUpdated: '1 min ago' },
-  { crop: 'Rice', price: '₹3,200 / qtl', change: '-₹30', direction: 'down', location: 'Andhra Pradesh', lastUpdated: '4 mins ago' },
-  { crop: 'Soybean', price: '₹4,100 / qtl', change: '+₹80', direction: 'up', location: 'Madhya Pradesh', lastUpdated: '6 mins ago' }
-];
 
 export function MarketplacePage() {
   const navigate = useNavigate();
-  const { label, t } = useTranslation();
+  const { label } = useTranslation();
+
+  // State for market data
+  const [marketPrices, setMarketPrices] = useState<MarketPrice[]>([]);
+  const [states, setStates] = useState<string[]>([]);
+  const [commodities, setCommodities] = useState<string[]>([]);
+
+  // Filters
+  const [selectedState, setSelectedState] = useState('');
+  const [selectedCommodity, setSelectedCommodity] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [translatedPrices, setTranslatedPrices] = useState(liveMarketPrices);
+  const [loading, setLoading] = useState(true);
+
   const [stats, setStats] = useState({
     total_listings: '2,847',
     active_buyers: '1,523',
@@ -39,265 +42,287 @@ export function MarketplacePage() {
     quality_score: '4.7/5'
   });
 
+  // Fetch initial data once on mount
   useEffect(() => {
-    const fetchStats = async () => {
-      const response = await apiClient.getMarketplaceStats();
-      if (response.data) {
-        setStats(response.data);
+    let isMounted = true;
+
+    const fetchInitialData = async () => {
+      console.log("MarketplacePage: Fetching initial data...");
+      setLoading(true);
+      try {
+        const [statsRes, pricesRes, statesRes, commoditiesRes] = await Promise.all([
+          apiClient.getMarketplaceStats().catch(e => ({ data: null })),
+          apiClient.getMarketPrices().catch(e => ({ data: null })),
+          apiClient.getMarketStates().catch(e => ({ data: null })),
+          apiClient.getMarketCommodities().catch(e => ({ data: null }))
+        ]);
+
+        if (!isMounted) return;
+
+        if (statsRes?.data) {
+          setStats(prev => ({ ...prev, ...statsRes.data }));
+        }
+
+        if (pricesRes?.data?.records) {
+          setMarketPrices(pricesRes.data.records);
+        }
+
+        if (statesRes?.data?.values && Array.isArray(statesRes.data.values)) {
+          setStates(statesRes.data.values);
+        }
+
+        if (commoditiesRes?.data?.values && Array.isArray(commoditiesRes.data.values)) {
+          setCommodities(commoditiesRes.data.values);
+        }
+      } catch (err) {
+        console.error("MarketplacePage: Error in fetchInitialData", err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     };
-    fetchStats();
+
+    fetchInitialData();
+    return () => { isMounted = false; };
   }, []);
 
+  // Debounce search query to avoid hammering the API
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   useEffect(() => {
-    const translateContent = async () => {
-      const translated = await Promise.all(
-        liveMarketPrices.map(async (p) => ({
-          ...p,
-          crop: await t(p.crop),
-          location: await t(p.location),
-          lastUpdated: await t(p.lastUpdated),
-        }))
-      );
-      setTranslatedPrices(translated);
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Handle filter and search changes
+  useEffect(() => {
+    let isMounted = true;
+    const fetchFiltered = async () => {
+      setLoading(true);
+      try {
+        const params: any = { limit: 100 };
+        if (selectedState) params.state = selectedState;
+        if (selectedCommodity) params.commodity = selectedCommodity;
+
+        // Use the generic 'q' parameter for the search bar input
+        const searchInput = debouncedSearch.trim();
+        if (searchInput.length >= 2) {
+          params.q = searchInput;
+        }
+
+        const response = await apiClient.getMarketPrices(params);
+
+        if (isMounted && response?.data?.records) {
+          setMarketPrices(response.data.records);
+        }
+      } catch (err) {
+        console.error("MarketplacePage: Filter fetch failed", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     };
-    translateContent();
-  }, [t]);
 
-  const [filteredPrices, setFilteredPrices] = useState(translatedPrices);
+    fetchFiltered();
+    return () => { isMounted = false; };
+  }, [selectedState, selectedCommodity, debouncedSearch]);
 
+  // Update commodities list when state changes
   useEffect(() => {
-    const filtered = translatedPrices.filter(price =>
-      price.crop.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      price.location.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredPrices(filtered);
-  }, [searchQuery, translatedPrices]);
+    let isMounted = true;
+    const updateCommodities = async () => {
+      try {
+        const res = await apiClient.getMarketCommodities(selectedState || undefined);
+        if (isMounted && res?.data?.values) {
+          setCommodities(res.data.values);
+        }
+      } catch (err) {
+        console.error("MarketplacePage: Commodity update failed", err);
+      }
+    };
+    updateCommodities();
+    return () => { isMounted = false; };
+  }, [selectedState]);
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
+  // Derived filter for search bar
+  const filteredPrices = useMemo(() => {
+    const prices = Array.isArray(marketPrices) ? marketPrices : [];
+    if (!searchQuery) return prices;
+
+    const query = searchQuery.toLowerCase();
+    return prices.filter(p =>
+      (p?.commodity || "").toLowerCase().includes(query) ||
+      (p?.district || "").toLowerCase().includes(query) ||
+      (p?.market || "").toLowerCase().includes(query) ||
+      (p?.state || "").toLowerCase().includes(query)
+    );
+  }, [marketPrices, searchQuery]);
 
   return (
     <div className="space-y-8">
-      <header className="flex items-start justify-between gap-6">
+      <header className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-semibold text-AgriNiti-text">{label('marketplaceTitle')}</h2>
-          <p className="mt-2 text-base text-AgriNiti-text-muted max-w-3xl">
-            {label('marketplaceSubtitle')}
+          <h2 className="text-2xl font-bold text-AgriNiti-text font-serif leading-tight uppercase tracking-tight">Market Intelligence</h2>
+          <p className="mt-2 text-base text-AgriNiti-text-muted max-w-2xl leading-relaxed">
+            Real-time government market data. Compare prices and discover trade opportunities across India.
           </p>
+        </div>
+        <div className="flex gap-4">
+          <div className="hidden lg:flex flex-col items-end">
+            <span className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-[0.2em]">Market Connectivity</span>
+            <div className="flex gap-2 mt-2">
+              <Badge tone="success" className="px-3">Verified API</Badge>
+              <Badge tone="info" className="px-3">Live Feed</Badge>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Search and Live Market Prices Section */}
-      <div className="space-y-6">
-        {/* Search Bar */}
-        <Card className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-AgriNiti-text-muted" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                placeholder={label('searchCropsPlaceholder')}
-                className="w-full pl-10 pr-4 py-3 border border-AgriNiti-border/50 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-AgriNiti-primary/50"
-              />
-            </div>
-            <Badge tone="info">{label('livePrices')}</Badge>
-          </div>
-        </Card>
+      {/* Discovery Dashboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Filters Sidebar/Column */}
+        <Card className="lg:col-span-1 p-6 h-fit sticky top-4">
+          <h3 className="text-sm font-bold text-AgriNiti-text uppercase tracking-widest mb-6 flex items-center gap-2">
+            <Filter className="h-4 w-4 text-AgriNiti-primary" />
+            Market Filters
+          </h3>
 
-        {/* Live Market Prices - 3 Preview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {filteredPrices.slice(0, 3).map((price) => (
-            <Card key={price.crop} className="p-4 border-l-4 border-l-AgriNiti-primary hover:shadow-soft-card transition-all">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h3 className="font-semibold text-AgriNiti-text">{price.crop}</h3>
-                  <p className="text-sm text-AgriNiti-text-muted">{price.location}</p>
-                </div>
-                <div className="flex items-center gap-1">
-                  {price.direction === 'up' ? (
-                    <TrendingUp className="h-4 w-4 text-AgriNiti-success" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-AgriNiti-error" />
-                  )}
-                  <span className={`text-sm font-medium ${price.direction === 'up' ? 'text-AgriNiti-success' : 'text-AgriNiti-error'
-                    }`}>
-                    {price.change}
-                  </span>
-                </div>
-              </div>
-              <div className="text-lg font-bold text-AgriNiti-accent-blue mb-1">
-                {price.price}
-              </div>
-              <p className="text-xs text-AgriNiti-text-muted">
-                {label('lastUpdated')} {price.lastUpdated}
-              </p>
-            </Card>
-          ))}
-        </div>
-
-        {/* All Market Prices Table */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-AgriNiti-text mb-4">{label('allMarketPricesTitle')}</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-AgriNiti-border/50">
-                  <th className="text-left py-3 px-4 font-medium text-AgriNiti-text-muted">{label('cropHeader')}</th>
-                  <th className="text-left py-3 px-4 font-medium text-AgriNiti-text-muted">{label('locationHeader')}</th>
-                  <th className="text-right py-3 px-4 font-medium text-AgriNiti-text-muted">{label('priceHeader')}</th>
-                  <th className="text-right py-3 px-4 font-medium text-AgriNiti-text-muted">{label('changeHeader')}</th>
-                  <th className="text-right py-3 px-4 font-medium text-AgriNiti-text-muted">{label('lastUpdatedHeader')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPrices.map((price) => (
-                  <tr key={price.crop} className="border-b border-AgriNiti-border/30 hover:bg-AgriNiti-bg/30">
-                    <td className="py-3 px-4 font-medium text-AgriNiti-text">{price.crop}</td>
-                    <td className="py-3 px-4 text-AgriNiti-text-muted">{price.location}</td>
-                    <td className="py-3 px-4 text-right font-semibold text-AgriNiti-accent-blue">{price.price}</td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {price.direction === 'up' ? (
-                          <TrendingUp className="h-3 w-3 text-AgriNiti-success" />
-                        ) : (
-                          <TrendingDown className="h-3 w-3 text-AgriNiti-error" />
-                        )}
-                        <span className={`font-medium ${price.direction === 'up' ? 'text-AgriNiti-success' : 'text-AgriNiti-error'
-                          }`}>
-                          {price.change}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-right text-AgriNiti-text-muted">{price.lastUpdated}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-      </div>
-
-      {/* SELL and BUY Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* SELL Across India Card */}
-        <Card className="p-6 bg-AgriNiti-accent-gold/5 border-AgriNiti-accent-gold/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 bg-AgriNiti-accent-gold/20 rounded-xl flex items-center justify-center">
-                <Package className="h-6 w-6 text-AgriNiti-accent-gold" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-AgriNiti-text">{label('sellAcrossIndiaTitle')}</h3>
-                <p className="text-sm text-AgriNiti-text-muted">{label('reachBuyers')}</p>
-              </div>
-            </div>
-            <Badge tone="success">{label('activeStatus')}</Badge>
-          </div>
-
-          <div className="space-y-3 mb-4">
-            <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">{label('totalListings')}</span>
-              <span className="font-semibold text-AgriNiti-text">{stats.total_listings}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">{label('activeBuyers')}</span>
-              <span className="font-semibold text-AgriNiti-text">{stats.active_buyers}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">{label('avgResponseTime')}</span>
-              <span className="font-semibold text-AgriNiti-text">{stats.avg_response_time}</span>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <Button
-              onClick={() => navigate('/list-produce')}
-              className="flex-1 bg-AgriNiti-accent-gold hover:bg-AgriNiti-accent-gold/90 text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {label('listProduceBtn')}
-            </Button>
-            <Button
-              onClick={() => navigate('/enquiries')}
-              variant="secondary"
-              className="flex-1"
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
-              {label('enquiriesBtn')}
-            </Button>
-          </div>
-        </Card>
-
-        {/* BUY Across India Card */}
-        <Card className="p-6 bg-AgriNiti-accent-blue/5 border-AgriNiti-accent-blue/30">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 bg-AgriNiti-accent-blue/20 rounded-xl flex items-center justify-center">
-                <ShoppingCart className="h-6 w-6 text-AgriNiti-accent-blue" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-AgriNiti-text">{label('buyAcrossIndiaTitle')}</h3>
-                <p className="text-sm text-AgriNiti-text-muted">{label('sourceDirectly')}</p>
-              </div>
-            </div>
-            <Badge tone="info">{label('activeStatus')}</Badge>
-          </div>
-
-          <div className="space-y-3 mb-4">
-            <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">{label('availableProduce')}</span>
-              <span className="font-semibold text-AgriNiti-text">{stats.available_produce}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">{label('verifiedSellers')}</span>
-              <span className="font-semibold text-AgriNiti-text">{stats.verified_sellers}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-AgriNiti-text-muted">{label('qualityScore')}</span>
-              <span className="font-semibold text-AgriNiti-text">{stats.quality_score}</span>
-            </div>
-          </div>
-
-          <Button
-            onClick={() => navigate('/browse-produce')}
-            className="w-full bg-AgriNiti-accent-blue hover:bg-AgriNiti-accent-blue/90 text-white"
-          >
-            <Search className="h-4 w-4 mr-2" />
-            {label('browseProduceBtn')}
-          </Button>
-        </Card>
-      </div>
-
-      {/* Manage Logistics Card */}
-      <Card className="p-6 bg-AgriNiti-primary/5 border-AgriNiti-primary/30">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 bg-AgriNiti-primary/20 rounded-xl flex items-center justify-center">
-              <Truck className="h-7 w-7 text-AgriNiti-primary" />
-            </div>
+          <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-AgriNiti-text">{label('businessAssistanceTitle')}</h3>
-              <p className="text-sm text-AgriNiti-text-muted">{label('businessAssistanceDesc')}</p>
+              <label className="text-xs font-bold text-AgriNiti-text-muted uppercase mb-2 block tracking-wider">Global Search</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-AgriNiti-text-muted" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Wheat, Rice, Punjab..."
+                  className="w-full pl-9 pr-4 py-2 bg-AgriNiti-bg/40 border border-AgriNiti-border/20 rounded-xl text-sm transition-all focus:bg-white focus:ring-2 focus:ring-AgriNiti-primary/20 outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-AgriNiti-text-muted uppercase mb-2 block tracking-wider">State</label>
+              <select
+                value={selectedState}
+                onChange={(e) => setSelectedState(e.target.value)}
+                className="w-full px-3 py-2 bg-white border border-AgriNiti-border/30 rounded-xl text-sm outline-none focus:ring-2 focus:ring-AgriNiti-primary/10"
+              >
+                <option value="">All States</option>
+                {Array.isArray(states) && states.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-AgriNiti-text-muted uppercase mb-2 block tracking-wider">Commodity</label>
+              <select
+                value={selectedCommodity}
+                onChange={(e) => setSelectedCommodity(e.target.value)}
+                className="w-full px-3 py-2 bg-white border border-AgriNiti-border/30 rounded-xl text-sm outline-none focus:ring-2 focus:ring-AgriNiti-primary/10"
+              >
+                <option value="">All Commodities</option>
+                {Array.isArray(commodities) && commodities.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+
+            <div className="pt-4 border-t border-AgriNiti-border/20">
+              <div className="flex items-center gap-3 text-AgriNiti-text-muted">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-xs font-bold uppercase tracking-widest">Real-time Feed</span>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm text-AgriNiti-text-muted">{label('activeShipments')}</p>
-              <p className="text-2xl font-bold text-AgriNiti-text">147</p>
-            </div>
-            <Button
-              onClick={() => navigate('/business-assistance')}
-              className="bg-AgriNiti-primary hover:bg-AgriNiti-primary/90 text-white"
-            >
-              {label('manageLogisticsBtn')}
-            </Button>
+        </Card>
+
+        {/* Results Main Area */}
+        <div className="lg:col-span-3 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {loading ? (
+              [1, 2].map(i => <Card key={i} className="p-6 h-40 animate-pulse bg-AgriNiti-bg/10"><div className="h-full w-full" /></Card>)
+            ) : filteredPrices.length === 0 ? (
+              <Card className="md:col-span-2 p-12 text-center bg-AgriNiti-bg/10 border-dashed">
+                <Package className="h-10 w-10 text-AgriNiti-text-muted mx-auto mb-3 opacity-20" />
+                <p className="text-sm font-bold text-AgriNiti-text-muted">No market matches your query.</p>
+                <button onClick={() => { setSelectedState(''); setSelectedCommodity(''); setSearchQuery(''); }} className="mt-4 text-AgriNiti-primary font-bold text-xs uppercase tracking-widest underline underline-offset-4">Reset Dashboard</button>
+              </Card>
+            ) : filteredPrices.slice(0, 4).map((price, idx) => (
+              <Card key={`${price.market}-${idx}`} className="p-6 hover:shadow-xl transition-all shadow-soft-card group border-l-4 border-l-AgriNiti-primary/50">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <span className="text-[10px] font-black text-AgriNiti-primary uppercase tracking-widest">Live Quote</span>
+                    <h3 className="text-xl font-black text-AgriNiti-text mt-1 group-hover:text-AgriNiti-primary transition-colors">{price.commodity}</h3>
+                    <p className="text-xs text-AgriNiti-text-muted mt-1 flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {price.market}, {price.district}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-black text-AgriNiti-text">₹{price.modal_price || '—'}</p>
+                    <p className="text-[9px] font-bold text-AgriNiti-text-muted uppercase">Per Quintal</p>
+                  </div>
+                </div>
+                <div className="py-3 border-y border-AgriNiti-border/10 flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-[9px] text-AgriNiti-text-muted font-black uppercase">Market Flow</p>
+                    <p className="text-xs font-bold text-AgriNiti-text">{price.state}</p>
+                  </div>
+                  <div className="text-right space-y-1">
+                    <p className="text-[9px] text-AgriNiti-text-muted font-black uppercase">Last Updated</p>
+                    <p className="text-xs font-bold text-AgriNiti-text">{price.arrival_date || 'Today'}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
+
+          {/* Trade Entry Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+            <div className="cursor-pointer group" onClick={() => navigate('/list-produce')}>
+              <Card className="p-8 bg-AgriNiti-accent-gold/5 border-AgriNiti-accent-gold/30 hover:bg-AgriNiti-accent-gold/10 transition-colors">
+                <div className="h-12 w-12 bg-AgriNiti-accent-gold/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Package className="h-6 w-6 text-AgriNiti-accent-gold" />
+                </div>
+                <h4 className="text-2xl font-black text-AgriNiti-text font-serif">Trade Produce</h4>
+                <p className="text-sm text-AgriNiti-text-muted mt-2 mb-6">List your harvest and reach {stats.active_buyers} high-intent verified buyers.</p>
+                <button className="flex items-center gap-2 text-sm font-black text-AgriNiti-accent-gold uppercase tracking-widest">
+                  Create Listing <Plus className="h-4 w-4" />
+                </button>
+              </Card>
+            </div>
+
+            <div className="cursor-pointer group" onClick={() => navigate('/browse-produce')}>
+              <Card className="p-8 bg-AgriNiti-accent-blue/5 border-AgriNiti-accent-blue/30 hover:bg-AgriNiti-accent-blue/10 transition-colors">
+                <div className="h-12 w-12 bg-AgriNiti-accent-blue/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <ShoppingCart className="h-6 w-6 text-AgriNiti-accent-blue" />
+                </div>
+                <h4 className="text-2xl font-black text-AgriNiti-text font-serif">Buy Direct</h4>
+                <p className="text-sm text-AgriNiti-text-muted mt-2 mb-6">Source harvest directly from {stats.verified_sellers} farm gates across Bharat.</p>
+                <button className="flex items-center gap-2 text-sm font-black text-AgriNiti-accent-blue uppercase tracking-widest">
+                  Browse Store <Search className="h-4 w-4" />
+                </button>
+              </Card>
+            </div>
+          </div>
+
+          <Card className="p-6 bg-AgriNiti-primary/5 border border-AgriNiti-primary/20 rounded-3xl overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+              <Truck className="h-32 w-32" />
+            </div>
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
+              <div className="flex items-center gap-6">
+                <div className="h-16 w-16 bg-AgriNiti-primary/20 rounded-3xl flex items-center justify-center shrink-0">
+                  <Truck className="h-8 w-8 text-AgriNiti-primary" />
+                </div>
+                <div>
+                  <h5 className="text-2xl font-black text-AgriNiti-text font-serif">Deep-Logistics Integration</h5>
+                  <p className="text-sm text-AgriNiti-text-muted mt-1">Our AI calculates distance-aware rankings to reduce your overhead and carbon footprint.</p>
+                </div>
+              </div>
+              <Button className="bg-AgriNiti-primary text-white font-black px-12 py-5 rounded-2xl shrink-0 shadow-lg shadow-AgriNiti-primary/20 hover:scale-[1.02] transition-all" onClick={() => navigate('/business-assistance')}>
+                Optimize Route
+              </Button>
+            </div>
+          </Card>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

@@ -104,12 +104,14 @@ export function CropAnalysisPage() {
   };
 
   return (
-    <div className="p-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-AgriNiti-text mb-3">{label('cropAnalysisTitle')}</h1>
-        <p className="text-lg text-AgriNiti-text-muted">
-          {label('cropAnalysisSubtitle')}
-        </p>
+    <div className="space-y-8">
+      <header className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+        <div>
+          <h2 className="text-2xl font-bold text-AgriNiti-text leading-tight uppercase tracking-tight">{label('cropAnalysisTitle')}</h2>
+          <p className="mt-2 text-base text-AgriNiti-text-muted max-w-2xl leading-relaxed">
+            {label('cropAnalysisSubtitle')}
+          </p>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

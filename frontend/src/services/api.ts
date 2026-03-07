@@ -140,6 +140,104 @@ class ApiClient {
     });
   }
 
+  async getMarketplaceProfile(): Promise<ApiResponse<any>> {
+    return this.request<any>('/v1/marketplace/profile/me');
+  }
+
+  async updateMarketplaceProfile(profileData: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/v1/marketplace/profile', {
+      method: 'POST',
+      body: JSON.stringify(profileData),
+    });
+  }
+
+  // --- Agriniti Endpoints ---
+
+  // Market Prices
+  async getMarketPrices(params: any = {}): Promise<ApiResponse<any>> {
+    const query = new URLSearchParams(params).toString();
+    return this.request<any>(`/api/v1/mandi/prices?${query}`);
+  }
+
+  async getMarketStates(): Promise<ApiResponse<any>> {
+    return this.request<any>('/api/v1/mandi/states');
+  }
+
+  async getMarketCommodities(state?: string): Promise<ApiResponse<any>> {
+    const url = state ? `/api/v1/mandi/commodities?state=${state}` : '/api/v1/mandi/commodities';
+    return this.request<any>(url);
+  }
+
+  // Aliases for compatibility
+  async getMandiPrices(params: any = {}) { return this.getMarketPrices(params); }
+  async getMandiStates() { return this.getMarketStates(); }
+  async getMandiCommodities(state?: string) { return this.getMarketCommodities(state); }
+
+  // Agriniti Auth (Separate from main auth if needed, but often unified in UI)
+  async agrinitiLogin(credentials: any): Promise<ApiResponse<any>> {
+    const formData = new URLSearchParams();
+    formData.append('username', credentials.username);
+    formData.append('password', credentials.password);
+    return this.request<any>('/agriniti/auth/login', {
+      method: 'POST',
+      body: formData,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+  }
+
+  // Agriniti Listings
+  async getAgrinitiListings(params: any = {}): Promise<ApiResponse<any[]>> {
+    const query = new URLSearchParams(params).toString();
+    return this.request<any[]>(`/agriniti/listings?${query}`);
+  }
+
+  async createAgrinitiListing(data: any): Promise<ApiResponse<any>> {
+    return this.request<any>('/agriniti/listings', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getMyAgrinitiListings(): Promise<ApiResponse<any[]>> {
+    return this.request<any[]>('/agriniti/listings/mine');
+  }
+
+  async updateAgrinitiListingStatus(listingId: string, status: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/agriniti/listings/${listingId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  async deleteAgrinitiListing(listingId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/agriniti/listings/${listingId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Ranking & Recommendation
+  async rankSellers(query: string, district?: string): Promise<ApiResponse<any>> {
+    const params = new URLSearchParams({ q: query });
+    if (district) params.append('buyer_district', district);
+    return this.request<any>(`/agriniti/rank/sellers?${params.toString()}`);
+  }
+
+  async matchBuyersForListing(listingId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/agriniti/rank/buyers-for-listing/${listingId}`);
+  }
+
+  // Ratings
+  async submitRating(ratingData: { ratee_id: string, score: number, comment?: string }): Promise<ApiResponse<any>> {
+    return this.request<any>('/agriniti/ratings', {
+      method: 'POST',
+      body: JSON.stringify(ratingData),
+    });
+  }
+
+  async getUserRating(userId: string): Promise<ApiResponse<any>> {
+    return this.request<any>(`/agriniti/ratings/user/${userId}`);
+  }
+
   // Chat Endpoints
   async getConversations(): Promise<ApiResponse<any[]>> {
     return this.request<any[]>('/v1/chat/conversations');

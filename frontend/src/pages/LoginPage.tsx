@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { Badge } from '../components/ui/Badge';
 import { useLanguageStore, AgriNitiLanguage } from '../store/languageStore';
 import { useAuthStore } from '../store/authStore';
 import { labels } from '../i18n/labels';
@@ -18,7 +17,7 @@ type LanguageCardConfig = {
 const LANGUAGES: LanguageCardConfig[] = [
   { code: 'en', title: 'English', native: 'English' },
   { code: 'hi', title: 'Hindi', native: 'हिंदी' },
-  { code: 'mr', title: 'Marathi', native: 'मराठी' },
+  { code: 'mr', title: 'Marathi', native: 'ಮರಾಠಿ' },
   { code: 'kn', title: 'Kannada', native: 'ಕನ್ನಡ' },
   { code: 'ta', title: 'Tamil', native: 'தமிழ்' },
   { code: 'te', title: 'Telugu', native: 'తెలుగు' },
@@ -33,7 +32,8 @@ export function LoginPage() {
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
-    password: ''
+    password: '',
+    role: 'farmer'
   });
   const [isRegistering, setIsRegistering] = useState(false);
 
@@ -46,55 +46,29 @@ export function LoginPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
-    // Truncate password to 72 characters max (bcrypt limitation)
-    if (name === 'password' && value.length > 72) {
-      return; // Don't allow passwords longer than 72 characters
-    }
-
+    if (name === 'password' && value.length > 72) return;
     setFormData(prev => ({ ...prev, [name]: value }));
     clearError();
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isRegistering) {
-      // Handle registration
       await register({
         email: formData.email,
         password: formData.password,
         full_name: formData.full_name,
-        preferred_language: selectedLanguage
+        preferred_language: selectedLanguage,
+        // @ts-ignore - backend expects role
+        role: formData.role
       });
-      // Registration calls login automatically in authStore
     } else {
-      // Handle login
       await login({
         username: formData.email,
         password: formData.password
       });
-
-      // Once login finishes, we have a user in the store. 
-      // If our chosen language differs from the profile, update it.
-      const state = useAuthStore.getState();
-      if (state.isAuthenticated && state.user && state.user.id) {
-        if (state.user.preferred_language !== selectedLanguage) {
-          await useAuthStore.getState().updateUser({ preferred_language: selectedLanguage });
-        }
-        navigate('/dashboard');
-      }
     }
-  };
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await register({
-      email: formData.email,
-      password: formData.password,
-      full_name: formData.full_name,
-      preferred_language: selectedLanguage
-    });
-    // authStore handles login inside register
     const state = useAuthStore.getState();
     if (state.isAuthenticated) {
       navigate('/dashboard');
@@ -139,34 +113,52 @@ export function LoginPage() {
 
       <section className="w-[400px]">
         <Card className="h-full p-8 flex flex-col justify-center">
-          <h2 className="text-xl font-semibold text-AgriNiti-text mb-6">
-            {hasSelected ? (isRegistering ? 'Create Account' : copy.login) : copy.loginTitle}
-          </h2>
-          <form onSubmit={isRegistering ? handleRegister : handleLogin} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <h2 className="text-xl font-semibold text-AgriNiti-text mb-2">
+              {hasSelected ? (isRegistering ? 'Create Account' : copy.login) : copy.loginTitle}
+            </h2>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-base">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
             {isRegistering && (
-              <div>
-                <label className="block text-sm font-medium text-AgriNiti-text-muted mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleInputChange}
-                  className="AgriNiti-input"
-                  placeholder="Enter your full name"
-                  disabled={isLoading}
-                  required
-                />
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2">Select Your Role</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['farmer', 'buyer', 'both'].map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setFormData(p => ({ ...p, role: r }))}
+                        className={`px-2 py-2 rounded-xl border text-[10px] font-bold uppercase transition-all ${formData.role === r
+                          ? 'bg-AgriNiti-primary text-white border-AgriNiti-primary shadow-sm'
+                          : 'bg-white text-AgriNiti-text-muted border-AgriNiti-border hover:border-AgriNiti-primary/40'
+                          }`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2">Full Name</label>
+                  <input
+                    type="text"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleInputChange}
+                    className="AgriNiti-input"
+                    placeholder="John Doe"
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-AgriNiti-text-muted mb-2">
+              <label className="block text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2">
                 {isRegistering ? 'Email Address' : copy.username}
               </label>
               <input
@@ -175,15 +167,14 @@ export function LoginPage() {
                 value={formData.email}
                 onChange={handleInputChange}
                 className="AgriNiti-input"
-                placeholder={isRegistering ? "Enter your email address" : copy.username}
-                autoComplete="username"
+                placeholder={isRegistering ? "email@example.com" : copy.username}
                 disabled={isLoading}
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-AgriNiti-text-muted mb-2">
-                {copy.password} <span className="text-gray-400">({formData.password.length}/72)</span>
+              <label className="block text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2">
+                {copy.password}
               </label>
               <input
                 type="password"
@@ -191,27 +182,22 @@ export function LoginPage() {
                 value={formData.password}
                 onChange={handleInputChange}
                 className="AgriNiti-input"
-                placeholder={copy.password}
-                autoComplete="current-password"
+                placeholder="********"
                 disabled={isLoading}
+                required
                 maxLength={72}
               />
-              {formData.password.length >= 65 && (
-                <p className="text-sm text-yellow-600 mt-2">
-                  Password approaching maximum length (72 characters)
-                </p>
-              )}
             </div>
 
             <div className="pt-4 space-y-3">
-              <Button type="submit" className="w-full py-3 text-base" disabled={!hasSelected || isLoading}>
-                {isLoading ? 'Processing...' : (isRegistering ? 'Creating Account...' : copy.login)}
+              <Button type="submit" className="w-full py-3 text-sm font-bold uppercase tracking-widest bg-AgriNiti-primary text-white" disabled={!hasSelected || isLoading}>
+                {isLoading ? 'Processing...' : (isRegistering ? 'Register Now' : copy.login)}
               </Button>
               <Button
                 type="button"
                 variant="secondary"
-                className="w-full py-3 text-base"
-                disabled={!hasSelected || isLoading}
+                className="w-full py-3 text-sm font-bold uppercase tracking-widest"
+                disabled={isLoading}
                 onClick={() => setIsRegistering(!isRegistering)}
               >
                 {isRegistering ? 'Back to Login' : copy.createAccount}
@@ -219,8 +205,8 @@ export function LoginPage() {
             </div>
           </form>
           {!hasSelected && (
-            <p className="mt-6 text-sm text-AgriNiti-text-muted">
-              Select a language card first to continue.
+            <p className="mt-6 text-xs text-AgriNiti-text-muted text-center italic">
+              Please select a language card to continue.
             </p>
           )}
         </Card>
@@ -228,4 +214,3 @@ export function LoginPage() {
     </AuthLayout>
   );
 }
-

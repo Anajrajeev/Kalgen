@@ -78,7 +78,7 @@ export function NegotiationPage() {
     try {
       // Get receiver's language preference
       const receiverLanguage = await getReceiverLanguage(receiverId);
-      
+
       const response = await apiClient.sendMessage({
         receiver_id: receiverId,
         content: textToSend,
@@ -111,11 +111,11 @@ export function NegotiationPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <header className="flex items-start justify-between gap-4">
+    <div className="space-y-8">
+      <header className="flex items-start justify-between gap-6">
         <div>
-          <h2 className="text-lg font-semibold text-AgriNiti-text">{label('negotiationTitle')}</h2>
-          <p className="mt-1 text-xs text-AgriNiti-text-muted max-w-2xl">
+          <h2 className="text-2xl font-bold text-AgriNiti-text font-serif leading-tight uppercase tracking-tight">{label('negotiationTitle')}</h2>
+          <p className="mt-2 text-base text-AgriNiti-text-muted max-w-2xl leading-relaxed">
             {label('negotiationSubtitle')}
           </p>
         </div>
@@ -130,7 +130,10 @@ export function NegotiationPage() {
               </p>
               <h3 className="text-sm font-semibold text-AgriNiti-text">{sellerName}</h3>
             </div>
-            <Badge tone="info">{label('realTimeTranslation')}</Badge>
+            <div className="flex items-center gap-2">
+              <Badge tone="success" className="text-[9px] font-black uppercase">Fair Price</Badge>
+              <Badge tone="info">{label('realTimeTranslation')}</Badge>
+            </div>
           </div>
           <div className="rounded-2xl border border-AgriNiti-border/80 bg-AgriNiti-bg/60 p-3 h-64 overflow-auto space-y-2">
             {messages.length === 0 ? (
@@ -140,11 +143,11 @@ export function NegotiationPage() {
               </div>
             ) : messages.map((msg, idx) => {
               const isMe = msg.sender_id === user?.id;
-              
+
               // Determine what content to display based on user's language preference
               let displayContent;
               let shouldShowTranslation = false;
-              
+
               if (isMe) {
                 // Always show my own messages in original language
                 displayContent = msg.original_content;
@@ -223,6 +226,34 @@ export function NegotiationPage() {
         </Card>
 
         <div className="space-y-4">
+          <Card className="p-4 space-y-3">
+            <p className="text-xs font-medium text-AgriNiti-text-muted uppercase tracking-[0.18em]">
+              Counterparty Information
+            </p>
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 bg-AgriNiti-primary/10 rounded-xl flex items-center justify-center font-bold text-AgriNiti-primary">
+                {sellerName[0]}
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-AgriNiti-text">{sellerName}</h4>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <Badge tone="success" className="text-[10px]">98% Trust</Badge>
+                  <span className="text-[10px] text-AgriNiti-text-muted">145 Trades</span>
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-AgriNiti-border/30">
+              <div className="text-center p-2 bg-AgriNiti-bg/40 rounded-lg">
+                <p className="text-[9px] text-AgriNiti-text-muted uppercase tracking-wider">Avg Res.</p>
+                <p className="text-xs font-bold text-AgriNiti-text">1.2 hrs</p>
+              </div>
+              <div className="text-center p-2 bg-AgriNiti-bg/40 rounded-lg">
+                <p className="text-[9px] text-AgriNiti-text-muted uppercase tracking-wider">Verified</p>
+                <p className="text-xs font-bold text-AgriNiti-success">Yes</p>
+              </div>
+            </div>
+          </Card>
+
           <Card className="p-4 space-y-3">
             <p className="text-xs font-medium text-AgriNiti-text-muted uppercase tracking-[0.18em]">
               {label('offerCounterOffer')}
