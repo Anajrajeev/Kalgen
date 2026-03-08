@@ -73,19 +73,19 @@ export function BuyersPage() {
         <div className="flex items-center gap-4">
           <Button variant="secondary" onClick={() => navigate('/marketplace')} className="inline-flex items-center gap-2 font-bold">
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {label('backBtn')}
           </Button>
           <div>
-            <h2 className="text-2xl font-bold text-AgriNiti-text font-serif leading-tight uppercase tracking-tight">AI Deep-Match Buyers</h2>
+            <h2 className="text-2xl font-bold text-AgriNiti-text font-serif leading-tight uppercase tracking-tight">{label('aiDeepMatchBuyersTitle')}</h2>
             <p className="mt-2 text-base text-AgriNiti-text-muted max-w-2xl leading-relaxed">
-              {commodity ? `AI-ranked potential buyers for ${commodity}` : "Buyers matched by trust and historical trade patterns."}
+              {commodity ? `${label('aiRankedBuyers')} ${commodity}` : label('aiMatchingSubtitle')}
             </p>
           </div>
         </div>
         {listingId && (
           <Badge tone="info" className="flex items-center gap-2 px-4 py-2">
             <Sparkles className="h-4 w-4" />
-            AI Matching Active
+            {label('aiMatchingActive')}
           </Badge>
         )}
       </header>
@@ -93,25 +93,25 @@ export function BuyersPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Sidebar stats or info */}
         <Card className="p-6 h-fit bg-AgriNiti-primary/5 border-AgriNiti-primary/30">
-          <h3 className="text-sm font-bold text-AgriNiti-text uppercase tracking-widest mb-4">How we rank</h3>
+          <h3 className="text-sm font-bold text-AgriNiti-text uppercase tracking-widest mb-4">{label('howWeRankTitle')}</h3>
           <div className="space-y-4">
             <div className="flex gap-3">
               <div className="h-8 w-8 bg-AgriNiti-success/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <ShieldCheck className="h-4 w-4 text-AgriNiti-success" />
               </div>
-              <p className="text-[11px] text-AgriNiti-text italic">Verified GST & Business Identity</p>
+              <p className="text-[11px] text-AgriNiti-text italic">{label('verifiedBusinessIdentity')}</p>
             </div>
             <div className="flex gap-3">
               <div className="h-8 w-8 bg-AgriNiti-accent-blue/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <MapPin className="h-4 w-4 text-AgriNiti-accent-blue" />
               </div>
-              <p className="text-[11px] text-AgriNiti-text italic">Haversine Distance Prioritization</p>
+              <p className="text-[11px] text-AgriNiti-text italic">{label('distancePrioritization')}</p>
             </div>
             <div className="flex gap-3">
               <div className="h-8 w-8 bg-AgriNiti-accent-gold/20 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Sparkles className="h-4 w-4 text-AgriNiti-accent-gold" />
               </div>
-              <p className="text-[11px] text-AgriNiti-text italic">Semantic Requirement Matching</p>
+              <p className="text-[11px] text-AgriNiti-text italic">{label('semanticMatching')}</p>
             </div>
           </div>
         </Card>
@@ -145,12 +145,12 @@ export function BuyersPage() {
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-black text-AgriNiti-text">{buyer.trust_score}%</div>
-                  <p className="text-[10px] text-AgriNiti-text-muted uppercase font-bold tracking-tighter">Trust Score</p>
+                  <p className="text-[10px] text-AgriNiti-text-muted uppercase font-bold tracking-tighter">{label('trustScore')}</p>
                 </div>
               </div>
 
               <div className="mb-4 p-3 bg-AgriNiti-bg/40 rounded-2xl border border-AgriNiti-border/20">
-                <p className="text-[10px] text-AgriNiti-primary font-bold uppercase tracking-widest mb-1">Matching Insight</p>
+                <p className="text-[10px] text-AgriNiti-primary font-bold uppercase tracking-widest mb-1">{label('matchingInsight')}</p>
                 <p className="text-xs text-AgriNiti-text leading-relaxed font-medium">"{buyer.reason}"</p>
               </div>
 
@@ -169,7 +169,7 @@ export function BuyersPage() {
                   className="bg-AgriNiti-primary text-white font-bold text-xs"
                   onClick={() => navigate('/negotiation', { state: { sellerId: buyer.id, sellerName: buyer.name } })}
                 >
-                  Initiate Deal
+                  {label('initiateDealBtn')}
                 </Button>
               </div>
             </Card>

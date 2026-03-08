@@ -4,6 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { ArrowLeft, Truck, MapPin, Package, Warehouse, DollarSign, Search, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../services/useTranslation';
 
 interface Shipment {
   id: string;
@@ -95,6 +96,7 @@ const warehouses: Warehouse[] = [
 
 export function BusinessAssistancePage() {
   const navigate = useNavigate();
+  const { label } = useTranslation();
   const [startLocation, setStartLocation] = useState('');
   const [destination, setDestination] = useState('');
   const [budget, setBudget] = useState('');
@@ -143,32 +145,32 @@ export function BusinessAssistancePage() {
               className="inline-flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Marketplace
+              {label('backToMarketplaceBtn')}
             </Button>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 bg-AgriNiti-primary/20 rounded-xl flex items-center justify-center">
                 <Truck className="h-5 w-5 text-AgriNiti-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-AgriNiti-text">Business Assistance</h1>
-                <p className="text-sm text-AgriNiti-text-muted">Manage logistics, transport, and warehouse solutions</p>
+                <h1 className="text-2xl font-bold text-AgriNiti-text">{label('businessAssistanceTitle')}</h1>
+                <p className="text-sm text-AgriNiti-text-muted">{label('businessAssistanceSubtitle')}</p>
               </div>
             </div>
           </div>
-          
+
           {/* Stats */}
           <div className="flex items-center gap-6">
             <div className="text-center">
               <div className="text-lg font-bold text-AgriNiti-text">147</div>
-              <div className="text-xs text-AgriNiti-text-muted">Active Shipments</div>
+              <div className="text-xs text-AgriNiti-text-muted">{label('activeShipmentsLabel')}</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-AgriNiti-text">23</div>
-              <div className="text-xs text-AgriNiti-text-muted">Available Trucks</div>
+              <div className="text-xs text-AgriNiti-text-muted">{label('availableTrucksLabel')}</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-AgriNiti-text">89%</div>
-              <div className="text-xs text-AgriNiti-text-muted">On-Time Delivery</div>
+              <div className="text-xs text-AgriNiti-text-muted">{label('onTimeDeliveryLabel')}</div>
             </div>
           </div>
         </div>
@@ -177,33 +179,30 @@ export function BusinessAssistancePage() {
         <div className="flex gap-1 mb-8 p-1 bg-AgriNiti-bg/50 rounded-xl w-fit">
           <button
             onClick={() => setActiveTab('track')}
-            className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'track'
-                ? 'bg-white text-AgriNiti-primary shadow-sm'
-                : 'text-AgriNiti-text-muted hover:text-AgriNiti-text'
-            }`}
+            className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'track'
+              ? 'bg-white text-AgriNiti-primary shadow-sm'
+              : 'text-AgriNiti-text-muted hover:text-AgriNiti-text'
+              }`}
           >
-            Track Shipments
+            {label('trackShipmentsTab')}
           </button>
           <button
             onClick={() => setActiveTab('book')}
-            className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'book'
-                ? 'bg-white text-AgriNiti-primary shadow-sm'
-                : 'text-AgriNiti-text-muted hover:text-AgriNiti-text'
-            }`}
+            className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'book'
+              ? 'bg-white text-AgriNiti-primary shadow-sm'
+              : 'text-AgriNiti-text-muted hover:text-AgriNiti-text'
+              }`}
           >
-            Book Transport
+            {label('bookTransportTab')}
           </button>
           <button
             onClick={() => setActiveTab('warehouse')}
-            className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
-              activeTab === 'warehouse'
-                ? 'bg-white text-AgriNiti-primary shadow-sm'
-                : 'text-AgriNiti-text-muted hover:text-AgriNiti-text'
-            }`}
+            className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'warehouse'
+              ? 'bg-white text-AgriNiti-primary shadow-sm'
+              : 'text-AgriNiti-text-muted hover:text-AgriNiti-text'
+              }`}
           >
-            Find Warehouse
+            {label('findWarehouseTab')}
           </button>
         </div>
 
@@ -233,14 +232,14 @@ export function BusinessAssistancePage() {
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-semibold text-AgriNiti-accent-blue">{shipment.cost}</div>
-                    <div className="text-sm text-AgriNiti-text-muted">Transport Cost</div>
+                    <div className="text-sm text-AgriNiti-text-muted">{label('transportCostLabel')}</div>
                   </div>
                 </div>
 
                 {/* Progress Bar */}
                 <div className="mb-4">
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-AgriNiti-text-muted">Progress</span>
+                    <span className="text-AgriNiti-text-muted">{label('progressLabel')}</span>
                     <span className="text-AgriNiti-text">{shipment.progress}%</span>
                   </div>
                   <div className="w-full bg-AgriNiti-border/30 rounded-full h-2">
@@ -254,11 +253,11 @@ export function BusinessAssistancePage() {
                 {/* Driver Info */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-AgriNiti-text-muted">Driver:</span>
+                    <span className="text-AgriNiti-text-muted">{label('driverLabel')}:</span>
                     <span className="ml-2 text-AgriNiti-text">{shipment.driver}</span>
                   </div>
                   <div>
-                    <span className="text-AgriNiti-text-muted">Vehicle:</span>
+                    <span className="text-AgriNiti-text-muted">{label('vehicleLabel')}:</span>
                     <span className="ml-2 text-AgriNiti-text">{shipment.vehicle}</span>
                   </div>
                 </div>
@@ -269,14 +268,14 @@ export function BusinessAssistancePage() {
 
         {activeTab === 'book' && (
           <Card className="p-8">
-            <h3 className="text-xl font-semibold text-AgriNiti-text mb-6">Book Transport</h3>
-            
+            <h3 className="text-xl font-semibold text-AgriNiti-text mb-6">{label('bookTransportTab')}</h3>
+
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-AgriNiti-text-muted mb-2">
                     <MapPin className="inline h-4 w-4 mr-1" />
-                    Start Location
+                    {label('startLocationLabel')}
                   </label>
                   <input
                     type="text"
@@ -289,7 +288,7 @@ export function BusinessAssistancePage() {
                 <div>
                   <label className="block text-sm font-medium text-AgriNiti-text-muted mb-2">
                     <MapPin className="inline h-4 w-4 mr-1" />
-                    Destination
+                    {label('destinationLabel')}
                   </label>
                   <input
                     type="text"
@@ -304,7 +303,7 @@ export function BusinessAssistancePage() {
               <div>
                 <label className="block text-sm font-medium text-AgriNiti-text-muted mb-2">
                   <DollarSign className="inline h-4 w-4 mr-1" />
-                  Transport Budget
+                  {label('transportBudgetLabel')}
                 </label>
                 <input
                   type="text"
@@ -321,7 +320,7 @@ export function BusinessAssistancePage() {
                     <div className="h-2 w-2 bg-AgriNiti-primary rounded-full"></div>
                   </div>
                   <div className="text-sm text-AgriNiti-text">
-                    <p className="font-medium mb-1">Transport Options Available:</p>
+                    <p className="font-medium mb-1">{label('transportOptionsTitle')}</p>
                     <ul className="space-y-1 text-AgriNiti-text-muted">
                       <li>• Standard trucks (10-20 tons capacity)</li>
                       <li>• Refrigerated vehicles for perishable goods</li>
@@ -338,7 +337,7 @@ export function BusinessAssistancePage() {
                 className="w-full bg-AgriNiti-primary hover:bg-AgriNiti-primary/90 text-white py-3 text-base"
               >
                 <Truck className="h-4 w-4 mr-2" />
-                Book Transport
+                {label('bookTransportTab')}
               </Button>
             </div>
           </Card>
@@ -356,7 +355,7 @@ export function BusinessAssistancePage() {
                     value={warehouseLocation}
                     onChange={(e) => setWarehouseLocation(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-AgriNiti-border/50 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-AgriNiti-primary/50"
-                    placeholder="Search warehouse by location..."
+                    placeholder={label('searchWarehousePlaceholder')}
                   />
                 </div>
                 <Button onClick={handleSearchWarehouse} className="bg-AgriNiti-primary hover:bg-AgriNiti-primary/90 text-white">
@@ -423,7 +422,7 @@ export function BusinessAssistancePage() {
                   {/* Action Button */}
                   <Button className="w-full bg-AgriNiti-accent-gold hover:bg-AgriNiti-accent-gold/90 text-white">
                     <Warehouse className="h-4 w-4 mr-2" />
-                    Book Warehouse Space
+                    {label('bookWarehouseBtn')}
                   </Button>
                 </Card>
               ))}

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routers import auth, translation, page_content, marketplace, chat
+from app.routers.weather import router as weather_router
 from app.middleware import LanguageMiddleware
 from contextlib import asynccontextmanager
 import httpx
@@ -67,8 +68,11 @@ app.include_router(ratings_router, prefix="/agriniti")
 
 # AI-Advisory RAG
 app.include_router(ai_advisory_router, prefix="/ai-advisory", tags=["AI Advisory"])
-app.include_router(simple_speech_advisory_router, prefix="/speech-advisory", tags=["Speech Advisory"])
+app.include_router(speech_advisory_router, prefix="/speech-advisory", tags=["Speech Advisory"])
 app.include_router(soil_advisory_router, prefix="/soil-advisory", tags=["Soil Advisory"])
+
+# Weather Service
+app.include_router(weather_router, tags=["Weather"])
 
 @app.get("/")
 async def root():

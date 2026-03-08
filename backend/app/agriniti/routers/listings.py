@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.agriniti.core.database import get_db
+from app.database import supabase
 from app.agriniti.core.models import Listing, User
 from app.agriniti.routers.auth import get_current_user
 from app.agriniti.services import chroma_service, embedding_service
@@ -30,6 +30,7 @@ class ListingCreate(BaseModel):
     district: str | None = None
     available_from: str | None = None   # ISO date e.g. "2026-03-15"
     available_until: str | None = None
+    unit: str = "Quintal"
 
 
 class ListingUpdate(BaseModel):
@@ -64,6 +65,14 @@ class ListingOut(BaseModel):
 
 
 def _listing_out(listing: Listing) -> dict:
+    created_at_val = listing.created_at
+    if isinstance(created_at_val, str):
+        created_at_iso = created_at_val
+    elif created_at_val:
+        created_at_iso = created_at_val.isoformat()
+    else:
+        created_at_iso = ""
+
     return {
         "id": listing.id,
         "seller_id": listing.seller_id,
@@ -76,7 +85,7 @@ def _listing_out(listing: Listing) -> dict:
         "available_from": listing.available_from,
         "available_until": listing.available_until,
         "status": listing.status,
-        "created_at": listing.created_at.isoformat(),
+        "created_at": created_at_iso,
         "seller_name": listing.seller.name if listing.seller else None,
         "seller_phone": listing.seller.phone if listing.seller else None,
         "seller_is_verified": listing.seller.is_verified if listing.seller else False,
@@ -91,27 +100,33 @@ def _listing_out(listing: Listing) -> dict:
 @router.post("", response_model=ListingOut, status_code=201, summary="Post a produce listing")
 async def create_listing(
     body: ListingCreate,
-    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     if current_user.role not in ("farmer", "both"):
         raise HTTPException(status_code=403, detail="Only farmers can post listings")
 
-    listing = Listing(
-        id=str(uuid.uuid4()),
-        seller_id=current_user.id,
-        commodity=body.commodity,
-        variety=body.variety,
-        quantity_qtl=body.quantity_qtl,
-        price_per_qtl=body.price_per_qtl,
-        state=body.state or current_user.state,
-        district=body.district or current_user.district,
-        available_from=body.available_from,
-        available_until=body.available_until,
-    )
-    db.add(listing)
-    db.commit()
-    db.refresh(listing)
+    listing_data = {
+        "id": str(uuid.uuid4()),
+        "user_id": current_user.id,
+        "produce_name": body.commodity,
+        "variety": body.variety,
+        "quantity": body.quantity_qtl,
+        "unit": body.unit,
+        "expected_price": str(body.price_per_qtl),
+        "state": body.state or current_user.state,
+        "district": body.district or current_user.district,
+        "available_from": body.available_from,
+        "available_until": body.available_until,
+        "status": "active"
+    }
+    
+    response = supabase.table("produce_listings").insert(listing_data).execute()
+    if not response.data:
+        raise HTTPException(status_code=500, detail="Failed to create listing in Supabase")
+    
+    listing = Listing(**response.data[0])
+    # Manually attach seller for _listing_out
+    listing.seller = current_user
 
     # Embed listing and store in ChromaDB (non-blocking, best-effort)
     try:
@@ -149,36 +164,63 @@ def browse_listings(
     status: str = "active",
     limit: int = 20,
     offset: int = 0,
-    db: Session = Depends(get_db),
 ):
-    q = db.query(Listing).filter(Listing.status == status)
+    query = supabase.table("produce_listings").select("*, users(*)").eq("status", status)
+    
     if commodity:
-        q = q.filter(Listing.commodity.ilike(f"%{commodity}%"))
+        query = query.ilike("produce_name", f"%{commodity}%")
     if state:
-        q = q.filter(Listing.state == state)
-    listings = q.order_by(Listing.created_at.desc()).offset(offset).limit(limit).all()
-    return [_listing_out(l) for l in listings]
+        query = query.eq("state", state)
+        
+    response = query.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
+    
+    results = []
+    for item in response.data:
+        user_data = item.pop("users", None)
+        listing = Listing(**item)
+        if user_data:
+            listing.seller = User(**user_data)
+        results.append(_listing_out(listing))
+    
+    return results
 
 
 @router.get("/mine", response_model=list[ListingOut], summary="My listings")
 def my_listings(
-    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    listings = (
-        db.query(Listing)
-        .filter(Listing.seller_id == current_user.id)
-        .order_by(Listing.created_at.desc())
-        .all()
-    )
-    return [_listing_out(l) for l in listings]
+    response = supabase.table("produce_listings")\
+        .select("*, users(*)")\
+        .eq("user_id", current_user.id)\
+        .order("created_at", desc=True)\
+        .execute()
+    
+    results = []
+    for item in response.data:
+        user_data = item.pop("users", None)
+        listing = Listing(**item)
+        if user_data:
+            listing.seller = User(**user_data)
+        results.append(_listing_out(listing))
+    
+    return results
 
 
 @router.get("/{listing_id}", response_model=ListingOut, summary="Get listing detail")
-def get_listing(listing_id: str, db: Session = Depends(get_db)):
-    listing = db.query(Listing).filter(Listing.id == listing_id).first()
-    if not listing:
+def get_listing(listing_id: str):
+    response = supabase.table("produce_listings")\
+        .select("*, users(*)")\
+        .eq("id", listing_id)\
+        .execute()
+    
+    if not response.data:
         raise HTTPException(status_code=404, detail="Listing not found")
+        
+    item = response.data[0]
+    user_data = item.pop("users", None)
+    listing = Listing(**item)
+    if user_data:
+        listing.seller = User(**user_data)
     return _listing_out(listing)
 
 
@@ -186,35 +228,46 @@ def get_listing(listing_id: str, db: Session = Depends(get_db)):
 def update_listing(
     listing_id: str,
     body: ListingUpdate,
-    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    listing = db.query(Listing).filter(Listing.id == listing_id).first()
-    if not listing:
+    response = supabase.table("produce_listings").select("*").eq("id", listing_id).execute()
+    if not response.data:
         raise HTTPException(status_code=404, detail="Listing not found")
-    if listing.seller_id != current_user.id:
+        
+    listing_item = response.data[0]
+    if listing_item["user_id"] != current_user.id:
         raise HTTPException(status_code=403, detail="Not your listing")
 
-    for field, value in body.model_dump(exclude_none=True).items():
-        setattr(listing, field, value)
-    db.commit()
-    db.refresh(listing)
+    update_dict = body.model_dump(exclude_none=True)
+    if "quantity_qtl" in update_dict:
+        update_dict["quantity"] = update_dict.pop("quantity_qtl")
+    if "price_per_qtl" in update_dict:
+        update_dict["expected_price"] = str(update_dict.pop("price_per_qtl"))
+
+    upd_response = supabase.table("produce_listings")\
+        .update(update_dict)\
+        .eq("id", listing_id)\
+        .execute()
+        
+    listing = Listing(**upd_response.data[0])
+    listing.seller = current_user
     return _listing_out(listing)
 
 
 @router.delete("/{listing_id}", status_code=204, summary="Deactivate listing")
 def delete_listing(
     listing_id: str,
-    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    listing = db.query(Listing).filter(Listing.id == listing_id).first()
-    if not listing:
+    response = supabase.table("produce_listings").select("*").eq("id", listing_id).execute()
+    if not response.data:
         raise HTTPException(status_code=404, detail="Listing not found")
-    if listing.seller_id != current_user.id:
+    
+    listing_item = response.data[0]
+    if listing_item["user_id"] != current_user.id:
         raise HTTPException(status_code=403, detail="Not your listing")
-    listing.status = "expired"
-    db.commit()
+        
+    supabase.table("produce_listings").update({"status": "expired"}).eq("id", listing_id).execute()
     # Remove from vector store
     try:
         chroma_service.delete_listing(listing_id)

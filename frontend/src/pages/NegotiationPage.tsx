@@ -228,7 +228,7 @@ export function NegotiationPage() {
         <div className="space-y-4">
           <Card className="p-4 space-y-3">
             <p className="text-xs font-medium text-AgriNiti-text-muted uppercase tracking-[0.18em]">
-              Counterparty Information
+              {label('counterpartyInfo')}
             </p>
             <div className="flex items-center gap-4">
               <div className="h-10 w-10 bg-AgriNiti-primary/10 rounded-xl flex items-center justify-center font-bold text-AgriNiti-primary">
@@ -237,19 +237,19 @@ export function NegotiationPage() {
               <div>
                 <h4 className="text-sm font-bold text-AgriNiti-text">{sellerName}</h4>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <Badge tone="success" className="text-[10px]">98% Trust</Badge>
-                  <span className="text-[10px] text-AgriNiti-text-muted">145 Trades</span>
+                  <Badge tone="success" className="text-[10px]">98% {label('trustScoreLabel')}</Badge>
+                  <span className="text-[10px] text-AgriNiti-text-muted">145 {label('tradesCountLabel')}</span>
                 </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-AgriNiti-border/30">
               <div className="text-center p-2 bg-AgriNiti-bg/40 rounded-lg">
-                <p className="text-[9px] text-AgriNiti-text-muted uppercase tracking-wider">Avg Res.</p>
-                <p className="text-xs font-bold text-AgriNiti-text">1.2 hrs</p>
+                <p className="text-[9px] text-AgriNiti-text-muted uppercase tracking-wider">{label('avgResTimeLabel')}</p>
+                <p className="text-xs font-bold text-AgriNiti-text">1.2 {label('hoursSuffix')}</p>
               </div>
               <div className="text-center p-2 bg-AgriNiti-bg/40 rounded-lg">
-                <p className="text-[9px] text-AgriNiti-text-muted uppercase tracking-wider">Verified</p>
-                <p className="text-xs font-bold text-AgriNiti-success">Yes</p>
+                <p className="text-[9px] text-AgriNiti-text-muted uppercase tracking-wider">{label('verifiedBadge')}</p>
+                <p className="text-xs font-bold text-AgriNiti-success">{label('activeStatus')}</p>
               </div>
             </div>
           </Card>

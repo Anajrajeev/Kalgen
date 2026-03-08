@@ -272,6 +272,51 @@ class ApiClient {
       headers: {} // Let browser set Content-Type for FormData
     });
   }
+  // --- AI Advisory Endpoints ---
+  async analyzePlantDisease(file: File): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.request<any>('/ai-advisory/analyze-plant-disease', {
+      method: 'POST',
+      body: formData,
+      headers: {} // Let browser set Content-Type for FormData
+    });
+  }
+
+  async analyzeSoil(file: File): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('image_file', file);
+    return this.request<any>('/soil-advisory/soil-analysis', {
+      method: 'POST',
+      body: formData,
+      headers: {}
+    });
+  }
+
+  async queryKb(query: string, top_k: number = 3): Promise<ApiResponse<any>> {
+    return this.request<any>('/ai-advisory/query', {
+      method: 'POST',
+      body: JSON.stringify({ query, top_k }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  async speechQuery(audioFile: Blob, language: string = 'auto', returnText: boolean = false): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('audio_file', audioFile, 'recording.webm');
+    formData.append('language', language);
+    formData.append('target_language', language);
+    if (returnText) {
+      formData.append('return_text', 'true');
+    }
+
+    return this.request<any>('/speech-advisory/speech-query', {
+      method: 'POST',
+      body: formData,
+      headers: {} // Let browser set Content-Type for FormData
+    });
+  }
 }
+
 
 export const apiClient = new ApiClient();

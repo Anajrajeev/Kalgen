@@ -132,17 +132,17 @@ export function ProfilePage() {
         {!isEditing ? (
           <Button onClick={() => setIsEditing(true)} variant="secondary" className="flex items-center gap-2">
             <Edit2 className="h-4 w-4" />
-            Edit Profile
+            {label('editProfileBtn')}
           </Button>
         ) : (
           <div className="flex gap-4">
             <Button onClick={() => setIsEditing(false)} variant="secondary" className="flex items-center gap-2">
               <X className="h-4 w-4" />
-              Cancel
+              {label('cancelBtn')}
             </Button>
             <Button onClick={handleSave} className="flex items-center gap-2 bg-AgriNiti-primary text-white">
               <Save className="h-4 w-4" />
-              Save Changes
+              {label('saveChangesBtn')}
             </Button>
           </div>
         )}
@@ -164,7 +164,7 @@ export function ProfilePage() {
               <h3 className="text-2xl font-bold text-AgriNiti-text">{editedName || 'Unnamed User'}</h3>
               <div className="mt-1">
                 <Badge tone={profile?.tier === 'premium' ? 'info' : 'neutral'} className="uppercase tracking-wider">
-                  {profile?.tier || 'Standard'} Tier
+                  {profile?.tier || 'Standard'} {label('tier' as any) || 'Tier'}
                 </Badge>
               </div>
             </div>
@@ -173,7 +173,7 @@ export function ProfilePage() {
               {isEditing ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">Full Name</label>
+                    <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('fullNameLabel')}</label>
                     <input
                       value={editedName}
                       onChange={(e) => setEditedName(e.target.value)}
@@ -181,7 +181,7 @@ export function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">Role</label>
+                    <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('roleLabel')}</label>
                     <div className="grid grid-cols-3 gap-2">
                       {['farmer', 'buyer', 'both'].map((role) => (
                         <button
@@ -198,7 +198,7 @@ export function ProfilePage() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">Location (District, State)</label>
+                    <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('locationLabel')}</label>
                     <input
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
@@ -208,7 +208,7 @@ export function ProfilePage() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">Farm Size (Acres)</label>
+                      <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('farmSizeLabel')}</label>
                       <input
                         value={farmSize}
                         onChange={(e) => setFarmSize(e.target.value)}
@@ -217,7 +217,7 @@ export function ProfilePage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">Primary Crops</label>
+                      <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('primaryCropsLabel')}</label>
                       <input
                         value={primaryCrops}
                         onChange={(e) => setPrimaryCrops(e.target.value)}
@@ -232,29 +232,29 @@ export function ProfilePage() {
                   <div className="p-4 bg-AgriNiti-surface rounded-2xl flex items-center gap-4 border border-AgriNiti-border/30">
                     <MapPin className="h-5 w-5 text-AgriNiti-primary/60" />
                     <div>
-                      <p className="text-[10px] font-bold text-AgriNiti-text-muted uppercase tracking-wider">Location</p>
-                      <p className="text-sm font-semibold">{location || 'Not set'}</p>
+                      <p className="text-[10px] font-bold text-AgriNiti-text-muted uppercase tracking-wider">{label('location')}</p>
+                      <p className="text-sm font-semibold">{location || label('notSet')}</p>
                     </div>
                   </div>
                   <div className="p-4 bg-AgriNiti-surface rounded-2xl flex items-center gap-4 border border-AgriNiti-border/30">
                     <Sprout className="h-5 w-5 text-AgriNiti-primary/60" />
                     <div>
-                      <p className="text-[10px] font-bold text-AgriNiti-text-muted uppercase tracking-wider">Primary Crops</p>
-                      <p className="text-sm font-semibold">{primaryCrops || 'None listed'}</p>
+                      <p className="text-[10px] font-bold text-AgriNiti-text-muted uppercase tracking-wider">{label('primaryCropsLabel')}</p>
+                      <p className="text-sm font-semibold">{primaryCrops || label('noneListed')}</p>
                     </div>
                   </div>
                   <div className="p-4 bg-AgriNiti-surface rounded-2xl flex items-center gap-4 border border-AgriNiti-border/30">
                     <Ruler className="h-5 w-5 text-AgriNiti-primary/60" />
                     <div>
-                      <p className="text-[10px] font-bold text-AgriNiti-text-muted uppercase tracking-wider">Farm Capacity</p>
-                      <p className="text-sm font-semibold">{farmSize ? `${farmSize} Acres` : 'Not set'}</p>
+                      <p className="text-[10px] font-bold text-AgriNiti-text-muted uppercase tracking-wider">{label('farmCapacityLabel')}</p>
+                      <p className="text-sm font-semibold">{farmSize ? `${farmSize} ${label('acres' as any) || 'Acres'}` : label('notSet')}</p>
                     </div>
                   </div>
                   <div className="p-4 bg-AgriNiti-surface rounded-2xl flex items-center gap-4 border border-AgriNiti-border/30">
                     <UserCheck className="h-5 w-5 text-AgriNiti-primary/60" />
                     <div>
-                      <p className="text-[10px] font-bold text-AgriNiti-text-muted uppercase tracking-wider">Experience Level</p>
-                      <p className="text-sm font-semibold capitalize">{userRole} · {profile?.total_sales || 0} Trades</p>
+                      <p className="text-[10px] font-bold text-AgriNiti-text-muted uppercase tracking-wider">{label('experienceLevelLabel')}</p>
+                      <p className="text-sm font-semibold capitalize">{userRole} · {profile?.total_sales || 0} {label('tradesCountLabel')}</p>
                     </div>
                   </div>
                 </div>
@@ -262,7 +262,7 @@ export function ProfilePage() {
             </div>
 
             <div className="pt-6 border-t border-AgriNiti-border/50">
-              <p className="text-[10px] font-bold text-AgriNiti-text-muted uppercase tracking-widest mb-4">Preferred Language</p>
+              <p className="text-[10px] font-bold text-AgriNiti-text-muted uppercase tracking-widest mb-4">{label('preferredLanguageLabel')}</p>
               <div className="flex flex-wrap gap-2">
                 {(Object.keys(languageLabels) as AgriNitiLanguage[]).map((code) => (
                   <button
@@ -295,11 +295,11 @@ export function ProfilePage() {
               <div className="flex-1">
                 <p className="text-sm font-bold text-AgriNiti-text">{label('profileTrustScore')}</p>
                 <p className="text-xs text-AgriNiti-text-muted mt-1">
-                  High reliability score based on {profile?.total_sales || 14} verified marketplace transactions.
+                  {label('trustScoreDesc')}
                 </p>
                 <div className="flex gap-2 mt-2">
-                  <Badge tone="success" className="text-[10px]">Verified</Badge>
-                  <Badge tone="info" className="text-[10px]">Regular Trader</Badge>
+                  <Badge tone="success" className="text-[10px]">{label('verifiedBadge')}</Badge>
+                  <Badge tone="info" className="text-[10px]">{label('regularTraderBadge')}</Badge>
                 </div>
               </div>
             </div>
@@ -313,17 +313,17 @@ export function ProfilePage() {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-AgriNiti-text flex items-center gap-2">
                 <Package className="h-5 w-5 text-AgriNiti-accent-blue" />
-                Manage Inventory
+                {label('manageInventoryTitle')}
               </h3>
-              <Badge tone="info">{myListings.length} Total Listings</Badge>
+              <Badge tone="info">{myListings.length} {label('totalListings')}</Badge>
             </div>
 
             <div className="space-y-4">
               {myListings.length === 0 ? (
                 <div className="text-center py-8 bg-AgriNiti-bg/20 rounded-2xl border border-dashed border-AgriNiti-border">
                   <Package className="h-10 w-10 text-AgriNiti-border mx-auto mb-2" />
-                  <p className="text-sm text-AgriNiti-text-muted">No active listings found.</p>
-                  <Button variant="secondary" className="mt-4 scale-90" onClick={() => window.location.href = '/list-produce'}>Post New Item</Button>
+                  <p className="text-sm text-AgriNiti-text-muted">{label('noListingsFound')}</p>
+                  <Button variant="secondary" className="mt-4 scale-90" onClick={() => window.location.href = '/list-produce'}>{label('postNewItemBtn')}</Button>
                 </div>
               ) : (
                 myListings.map((listing) => (
@@ -362,7 +362,7 @@ export function ProfilePage() {
           {/* Activity Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-6">
-              <h3 className="text-sm font-bold text-AgriNiti-text-muted uppercase tracking-widest mb-4">Advisory Snapshot</h3>
+              <h3 className="text-sm font-bold text-AgriNiti-text-muted uppercase tracking-widest mb-4">{label('advisorySnapshotTitle')}</h3>
               <div className="space-y-4">
                 {[
                   { title: 'Disease Detection', result: 'Pest identified: Aphids', date: '2 days ago', icon: ShieldCheck },
@@ -383,7 +383,7 @@ export function ProfilePage() {
             </Card>
 
             <Card className="p-6">
-              <h3 className="text-sm font-bold text-AgriNiti-text-muted uppercase tracking-widest mb-4">Recent Activity</h3>
+              <h3 className="text-sm font-bold text-AgriNiti-text-muted uppercase tracking-widest mb-4">{label('recentActivityTitle')}</h3>
               <div className="space-y-4 relative before:absolute before:left-2 before:top-1 before:bottom-1 before:w-px before:bg-AgriNiti-border/30">
                 {[
                   'Updated primary crops to Rice and Maize',

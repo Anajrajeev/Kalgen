@@ -1,8 +1,11 @@
-import { AlertTriangle, Droplets, Bug, CloudRain, Camera, Sparkles, TrendingUp, Lightbulb, SendHorizontal, Mic, ImageIcon } from 'lucide-react';
+import { AlertTriangle, Droplets, Bug, CloudRain, Camera, Sparkles, TrendingUp, Lightbulb, SendHorizontal, Mic, ImageIcon, Square } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../services/useTranslation';
+import { apiClient } from '../services/api';
+import { useLanguageStore } from '../store/languageStore';
 
 interface Feature {
   id: number;
@@ -15,8 +18,16 @@ interface Feature {
 
 export function CropAnalysisPage() {
   const { label, t } = useTranslation();
+  const navigate = useNavigate();
+  const chatPanelRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState('');
   const [messages, setMessages] = useState<Array<{ type: 'user' | 'ai', content: string }>>([]);
+  const [isAsking, setIsAsking] = useState(false);
+  const selectedLanguage = useLanguageStore((s) => s.selectedLanguage);
+
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const aiFeatures: Feature[] = [
     {
@@ -69,31 +80,87 @@ export function CropAnalysisPage() {
     }
   ];
 
-
   const handleAsk = async () => {
-    if (!query.trim()) return;
+    if (!query.trim() || isAsking) return;
 
     // Add user message
     const userMessage = query.trim();
     setMessages(prev => [...prev, { type: 'user', content: userMessage }]);
+    setQuery('');
+    setIsAsking(true);
 
-    // Add AI response based on context
-    let aiResponse = '';
-    if (userMessage.toLowerCase().includes('disease') || userMessage.toLowerCase().includes('pest')) {
-      aiResponse = 'Based on your crop analysis, I recommend monitoring for early signs of fungal diseases, especially during humid conditions. The AI detection system can identify common diseases like leaf rust and blight with 95% accuracy. Consider preventive treatment if weather conditions favor disease spread.';
-    } else if (userMessage.toLowerCase().includes('soil') || userMessage.toLowerCase().includes('nutrient')) {
-      aiResponse = 'Your soil analysis shows moderate nitrogen levels but low phosphorus content. I recommend applying a balanced NPK fertilizer with higher phosphorus ratio. The soil pH is optimal at 6.5, which is ideal for most crops. Consider adding organic matter to improve water retention.';
-    } else if (userMessage.toLowerCase().includes('weather') || userMessage.toLowerCase().includes('rain')) {
-      aiResponse = 'The predictive models indicate moderate rainfall over the next 5 days, which should be beneficial for crop growth. However, there\'s a 30% chance of heavy rainfall on day 3, so ensure proper drainage. Temperature conditions are optimal for current crop stage.';
-    } else if (userMessage.toLowerCase().includes('yield') || userMessage.toLowerCase().includes('harvest')) {
-      aiResponse = 'Based on current crop health indicators and weather patterns, the yield forecast is 15% above average for your region. Key factors contributing to this include adequate soil moisture and low disease pressure. Continue current management practices for optimal results.';
-    } else {
-      aiResponse = 'I can help you with specific questions about your crop analysis results, disease detection, soil conditions, weather predictions, or yield forecasts. The AI system provides personalized recommendations based on your specific field conditions and crop type.';
+    try {
+      const response = await apiClient.queryKb(userMessage);
+      if (response.error) {
+        setMessages(prev => [...prev, { type: 'ai', content: `Error: ${response.error}` }]);
+      } else if (response.data && response.data.answer) {
+        const translatedResponse = await t(response.data.answer);
+        setMessages(prev => [...prev, { type: 'ai', content: translatedResponse }]);
+      } else {
+        setMessages(prev => [...prev, { type: 'ai', content: "I couldn't process your request at the moment." }]);
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, { type: 'ai', content: "An unexpected error occurred while communicating with the AI." }]);
+    } finally {
+      setIsAsking(false);
+    }
+  };
+
+  const handleVoiceQuery = async () => {
+    if (isRecording) {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+        setIsRecording(false);
+      }
+      return;
     }
 
-    const translatedResponse = await t(aiResponse);
-    setMessages(prev => [...prev, { type: 'ai', content: translatedResponse }]);
-    setQuery('');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+
+        setMessages(prev => [...prev, { type: 'user', content: '🎤 Voice Message' }]);
+        setIsAsking(true);
+        stream.getTracks().forEach(track => track.stop());
+
+        try {
+          const response = await apiClient.speechQuery(audioBlob, selectedLanguage);
+          if (response.error) {
+            setMessages(prev => [...prev, { type: 'ai', content: `Error: ${response.error}` }]);
+          } else if (response.data) {
+            const data = response.data;
+            const aiMessage = `${data.translated_response || data.rag_response}\n\n(Transcribed: ${data.transcribed_text})`;
+            setMessages(prev => [...prev, { type: 'ai', content: aiMessage }]);
+
+            if (data.audio_response) {
+              const audioObj = new Audio(`data:audio/mp3;base64,${data.audio_response}`);
+              audioObj.play().catch(e => console.error('Audio playback failed', e));
+            }
+          }
+        } catch (err) {
+          setMessages(prev => [...prev, { type: 'ai', content: "An error occurred while processing your voice query." }]);
+        } finally {
+          setIsAsking(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      setMessages(prev => [...prev, { type: 'ai', content: "Microphone access is required for voice queries." }]);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -103,6 +170,17 @@ export function CropAnalysisPage() {
     }
   };
 
+  const handleUploadClick = () => {
+    navigate('/ai-disease-detection');
+  };
+
+  const handlePredictiveModelsClick = () => {
+    navigate('/rain-forecast');
+  };
+
+  const handleRecommendationClick = () => {
+    chatPanelRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
   return (
     <div className="space-y-8">
       <header className="flex flex-col md:flex-row md:items-start justify-between gap-6">
@@ -117,8 +195,26 @@ export function CropAnalysisPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {aiFeatures.map((feature) => {
           const Icon = feature.icon;
+          const isDiseaseDetection = feature.id === 1;
+          const isPredictiveModels = feature.id === 3;
+          const isPersonalizedRecs = feature.id === 4;
+
+          const getClickHandler = () => {
+            if (isDiseaseDetection) return handleUploadClick;
+            if (isPredictiveModels) return handlePredictiveModelsClick;
+            if (isPersonalizedRecs) return handleRecommendationClick;
+            if (feature.id === 2) return () => navigate('/soil-analysis');
+            return undefined;
+          };
+
+          const isClickable = isDiseaseDetection || isPredictiveModels || isPersonalizedRecs || feature.id === 2;
+
           return (
-            <Card key={feature.id} className={`p-6 border-dashed ${feature.color} hover:shadow-soft-card hover:-translate-y-0.5 transition-all`}>
+            <Card
+              key={feature.id}
+              className={`p-6 border-dashed ${feature.color} hover:shadow-soft-card hover:-translate-y-0.5 transition-all ${isClickable ? 'cursor-pointer' : ''}`}
+              onClick={getClickHandler()}
+            >
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-soft-card">
@@ -147,7 +243,7 @@ export function CropAnalysisPage() {
         })}
       </div>
 
-      <div className="mt-12">
+      <div className="mt-12" ref={chatPanelRef}>
         <Card className="p-8 bg-AgriNiti-primary/5 border-AgriNiti-primary/20">
           <div className="text-center mb-8">
             <Sparkles className="h-16 w-16 text-AgriNiti-primary mx-auto mb-6" />
@@ -164,11 +260,14 @@ export function CropAnalysisPage() {
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-lg font-semibold text-AgriNiti-text">{label('askAnalysisTitle')}</h4>
                 <div className="flex items-center gap-2">
-                  <button className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-AgriNiti-accent-blue/10 text-AgriNiti-accent-blue rounded-lg hover:bg-AgriNiti-accent-blue/20 transition-colors">
-                    <Mic className="h-4 w-4" />
-                    <span>{label('voice')}</span>
+                  <button
+                    onClick={handleVoiceQuery}
+                    className={`inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${isRecording ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-AgriNiti-accent-blue/10 text-AgriNiti-accent-blue hover:bg-AgriNiti-accent-blue/20'}`}
+                  >
+                    {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                    <span>{isRecording ? 'Stop Recording' : label('voice')}</span>
                   </button>
-                  <button className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-AgriNiti-accent-gold/10 text-AgriNiti-accent-gold rounded-lg hover:bg-AgriNiti-accent-gold/20 transition-colors">
+                  <button onClick={handleUploadClick} className="inline-flex items-center gap-2 px-3 py-2 text-sm bg-AgriNiti-accent-gold/10 text-AgriNiti-accent-gold rounded-lg hover:bg-AgriNiti-accent-gold/20 transition-colors">
                     <ImageIcon className="h-4 w-4" />
                     <span>{label('upload')}</span>
                   </button>
@@ -193,7 +292,7 @@ export function CropAnalysisPage() {
                         : 'bg-white border border-AgriNiti-border/50 text-AgriNiti-text'
                         }`}
                     >
-                      {message.content}
+                      <p>{message.content}</p>
                     </div>
                   </div>
                 ))}
@@ -210,9 +309,10 @@ export function CropAnalysisPage() {
                 <button
                   type="button"
                   onClick={handleAsk}
-                  className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-AgriNiti-primary text-white shadow-soft-card hover:bg-AgriNiti-primary-hover transition-colors"
+                  disabled={!query.trim()}
+                  className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-AgriNiti-primary text-white shadow-soft-card hover:bg-AgriNiti-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <SendHorizontal className="h-5 w-5" />
+                  <SendHorizontal className={`h-5 w-5 ${isAsking ? 'animate-pulse' : ''}`} />
                 </button>
               </div>
             </div>

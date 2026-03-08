@@ -11,11 +11,21 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plain password against a hashed password"""
+    """Verify a plain password against a hashed password with plain-text fallback for migration"""
     import bcrypt
-    # Truncate plain password to match bcrypt's behavior
-    truncated_plain = plain_password[:72] if len(plain_password) > 72 else plain_password
-    return bcrypt.checkpw(truncated_plain.encode('utf-8'), hashed_password.encode('utf-8'))
+    
+    # Check if this is a bcrypt hash (standard bcrypt hashes start with $2)
+    if hashed_password and hashed_password.startswith("$2"):
+        try:
+            # Truncate plain password to match bcrypt's behavior
+            truncated_plain = plain_password[:72] if len(plain_password) > 72 else plain_password
+            return bcrypt.checkpw(truncated_plain.encode('utf-8'), hashed_password.encode('utf-8'))
+        except ValueError:
+            # If for some reason it's a malformed hash, fall back to plain comparison
+            return plain_password == hashed_password
+            
+    # Fallback for plain-text passwords from legacy data
+    return plain_password == hashed_password
 
 
 def get_password_hash(password: str) -> str:

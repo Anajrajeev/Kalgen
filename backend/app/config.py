@@ -55,6 +55,10 @@ class Settings(BaseSettings):
                 )
         return self
 
+    # Database Configuration
+    # Database Configuration - Set this in .env for Supabase
+    database_url: str = "" 
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 

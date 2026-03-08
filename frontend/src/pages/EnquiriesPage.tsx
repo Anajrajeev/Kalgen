@@ -45,18 +45,18 @@ export function EnquiriesPage() {
                 <div>
                     <h2 className="text-2xl font-semibold text-AgriNiti-text">{label('enquiriesBtn')}</h2>
                     <p className="mt-1 text-sm text-AgriNiti-text-muted">
-                        Manage your latest messages and negotiations
+                        {label('enquiriesSubtitle')}
                     </p>
                 </div>
             </header>
 
             {loading ? (
-                <div className="text-center py-10 text-AgriNiti-text-muted">Loading enquiries...</div>
+                <div className="text-center py-10 text-AgriNiti-text-muted">{label('loading' as any) || 'Loading enquiries...'}</div>
             ) : enquiries.length === 0 ? (
                 <Card className="p-10 text-center">
                     <MessageCircle className="h-12 w-12 text-AgriNiti-text-muted mx-auto mb-4 opacity-50" />
                     <p className="text-lg font-medium text-AgriNiti-text mb-2">{label('noEnquiries')}</p>
-                    <p className="text-AgriNiti-text-muted">You have no active chats at the moment.</p>
+                    <p className="text-AgriNiti-text-muted">{label('noEnquiriesDesc')}</p>
                 </Card>
             ) : (
                 <div className="space-y-4">
@@ -77,7 +77,7 @@ export function EnquiriesPage() {
                                 className="bg-AgriNiti-primary hover:bg-AgriNiti-primary/90 text-white w-full md:w-auto mt-2 md:mt-0"
                             >
                                 <MessageCircle className="h-4 w-4 mr-2" />
-                                Open Chat
+                                {label('openChatBtn')}
                             </Button>
                         </Card>
                     ))}

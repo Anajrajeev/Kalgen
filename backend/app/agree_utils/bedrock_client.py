@@ -17,20 +17,8 @@ class BedrockClient:
         )
 
     def generate_text(self, model_id: str, prompt: str, temperature: float = 0.7, max_tokens: int = 300):
-        """Generate text using Bedrock with Meta Llama 3 8B Instruct model."""
+        """Generate text using Bedrock with Claude 3 Haiku model."""
         try:
-            # Use Meta Llama 3 8B Instruct model
-            llama_model_id = "meta.llama3-8b-instruct-v1:0"
-            
-            # Llama models use different body format
-            body = {
-                "prompt": prompt,
-                "max_gen_len": max_tokens,
-                "temperature": temperature,
-                "top_p": 0.9
-            }
-            
-            # Use bedrock-runtime client instead of bedrock client
             runtime_client = boto3.client(
                 "bedrock-runtime",
                 region_name=settings.aws_region,
@@ -38,20 +26,31 @@ class BedrockClient:
                 aws_secret_access_key=settings.aws_secret_key,
             )
             
+            body = {
+                "anthropic_version": "bedrock-2023-05-31",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                "max_tokens": max_tokens,
+                "temperature": temperature
+            }
+            
             response = runtime_client.invoke_model(
-                modelId=llama_model_id,
+                modelId="anthropic.claude-3-haiku-20240307-v1:0",
                 body=json.dumps(body)
             )
             
             response_body = json.loads(response["body"].read())
-            # Llama models return response in "generation" field
-            answer = response_body.get("generation", "")
+            answer = response_body.get("content", [{}])[0].get("text", "")
             
             return answer
             
         except Exception as e:
             # If Bedrock fails, return a helpful error message
-            return f"Error calling Bedrock: {str(e)}"
+            return f"Error calling Bedrock Claude: {str(e)}"
 
     def analyze_image(self, image_data: str, prompt: str, model_id: str = "anthropic.claude-3-sonnet-20240229-v1:0"):
         """Analyze image using Claude 3 Sonnet vision model."""

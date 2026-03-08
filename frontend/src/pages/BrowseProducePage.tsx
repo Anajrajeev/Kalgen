@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { TranslatedText } from '../components/ui/TranslatedText';
 import { ArrowLeft, MessageCircle, Star, MapPin, Package, Search, Sparkles, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../services/useTranslation';
@@ -136,11 +137,11 @@ export function BrowseProducePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
-              placeholder="AI Semantic Search (e.g. Rice in Punjab)"
+              placeholder={label('aiSearchPlaceholder')}
               className="w-full pl-10 pr-4 py-2 text-sm bg-transparent border-none focus:ring-0"
             />
           </div>
-          <Button onClick={handleSearchClick} className="bg-AgriNiti-primary text-white scale-90">Search</Button>
+          <Button onClick={handleSearchClick} className="bg-AgriNiti-primary text-white scale-90">{label('sendBtn')}</Button>
         </div>
       </div>
 
@@ -185,11 +186,11 @@ export function BrowseProducePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-bold text-AgriNiti-text">{seller.name}</h3>
-                    {seller.verified && <Badge tone="success" className="h-5 text-[9px] uppercase font-black">Verified</Badge>}
+                    {seller.verified && <Badge tone="success" className="h-5 text-[9px] uppercase font-black">{label('verifiedBadge')}</Badge>}
                   </div>
                   <p className="text-xs text-AgriNiti-text-muted font-medium flex items-center gap-1 mt-1">
                     <MapPin className="h-3 w-3 text-AgriNiti-primary" />
-                    {seller.location} · <span className="text-AgriNiti-accent-blue">{seller.distance}</span>
+                    <TranslatedText text={seller.location} /> · <span className="text-AgriNiti-accent-blue"><TranslatedText text={seller.distance} /></span>
                   </p>
                 </div>
               </div>
@@ -202,12 +203,12 @@ export function BrowseProducePage() {
 
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="p-3 bg-AgriNiti-bg/40 rounded-2xl border border-AgriNiti-border/20">
-                <p className="text-[10px] text-AgriNiti-text-muted uppercase font-bold tracking-widest mb-1">Produce</p>
-                <p className="text-sm font-bold text-AgriNiti-text truncate">{seller.produce}</p>
+                <p className="text-[10px] text-AgriNiti-text-muted uppercase font-bold tracking-widest mb-1">{label('produceLabel')}</p>
+                <p className="text-sm font-bold text-AgriNiti-text truncate"><TranslatedText text={seller.produce} /></p>
               </div>
               <div className="p-3 bg-AgriNiti-bg/40 rounded-2xl border border-AgriNiti-border/20 text-right">
-                <p className="text-[10px] text-AgriNiti-text-muted uppercase font-bold tracking-widest mb-1">Estimated Price</p>
-                <p className="text-lg font-black text-AgriNiti-accent-blue">₹{seller.price}<span className="text-[10px] font-normal">/qtl</span></p>
+                <p className="text-[10px] text-AgriNiti-text-muted uppercase font-bold tracking-widest mb-1">{label('expectedPriceLabel')}</p>
+                <p className="text-lg font-black text-AgriNiti-accent-blue">₹{seller.price}<span className="text-[10px] font-normal">/{label('unitLabel')}</span></p>
               </div>
             </div>
 
@@ -217,14 +218,14 @@ export function BrowseProducePage() {
                 className="flex-1 font-bold text-xs"
                 onClick={() => navigate(`/seller/${seller.userId}`)}
               >
-                Producer View
+                {label('producerViewBtn')}
               </Button>
               <Button
                 className="flex-1 bg-AgriNiti-accent-blue text-white font-bold text-xs shadow-lg shadow-AgriNiti-accent-blue/20"
                 onClick={() => navigate('/negotiation', { state: { sellerId: seller.userId, sellerName: seller.name } })}
               >
                 <MessageCircle className="h-4 w-4 mr-2" />
-                Bargain
+                {label('contactMakeOfferBtn')}
               </Button>
             </div>
           </Card>

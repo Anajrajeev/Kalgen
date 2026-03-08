@@ -103,7 +103,7 @@ export function LoginPage() {
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-AgriNiti-primary text-white shadow-sm">
                     <Mic className="h-4 w-4" />
                   </span>
-                  <span>Voice-ready</span>
+                  <span>{copy.voiceReady}</span>
                 </div>
               </button>
             );
@@ -115,7 +115,7 @@ export function LoginPage() {
         <Card className="h-full p-8 flex flex-col justify-center">
           <form onSubmit={handleSubmit} className="space-y-6">
             <h2 className="text-xl font-semibold text-AgriNiti-text mb-2">
-              {hasSelected ? (isRegistering ? 'Create Account' : copy.login) : copy.loginTitle}
+              {hasSelected ? (isRegistering ? copy.registerNowBtn : copy.login) : copy.loginTitle}
             </h2>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -125,7 +125,7 @@ export function LoginPage() {
             {isRegistering && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2">Select Your Role</label>
+                  <label className="block text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2">{copy.selectRoleLabel}</label>
                   <div className="grid grid-cols-3 gap-2">
                     {['farmer', 'buyer', 'both'].map((r) => (
                       <button
@@ -143,7 +143,7 @@ export function LoginPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2">Full Name</label>
+                  <label className="block text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2">{copy.fullNameLabel}</label>
                   <input
                     type="text"
                     name="full_name"
@@ -159,7 +159,7 @@ export function LoginPage() {
             )}
             <div>
               <label className="block text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2">
-                {isRegistering ? 'Email Address' : copy.username}
+                {isRegistering ? copy.emailAddressLabel : copy.username}
               </label>
               <input
                 type={isRegistering ? "email" : "text"}
@@ -191,7 +191,7 @@ export function LoginPage() {
 
             <div className="pt-4 space-y-3">
               <Button type="submit" className="w-full py-3 text-sm font-bold uppercase tracking-widest bg-AgriNiti-primary text-white" disabled={!hasSelected || isLoading}>
-                {isLoading ? 'Processing...' : (isRegistering ? 'Register Now' : copy.login)}
+                {isLoading ? copy.processing : (isRegistering ? copy.registerNowBtn : copy.login)}
               </Button>
               <Button
                 type="button"
@@ -200,13 +200,13 @@ export function LoginPage() {
                 disabled={isLoading}
                 onClick={() => setIsRegistering(!isRegistering)}
               >
-                {isRegistering ? 'Back to Login' : copy.createAccount}
+                {isRegistering ? copy.backToLoginBtn : copy.createAccount}
               </Button>
             </div>
           </form>
           {!hasSelected && (
             <p className="mt-6 text-xs text-AgriNiti-text-muted text-center italic">
-              Please select a language card to continue.
+              {copy.selectLanguageToContinue}
             </p>
           )}
         </Card>

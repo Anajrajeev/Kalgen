@@ -6,8 +6,7 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 from jose import JWTError, jwt
-from sqlalchemy.orm import Session
-
+from app.database import supabase
 from app.agriniti.core.config import settings
 from app.agriniti.core.models import User
 
@@ -47,9 +46,21 @@ def decode_token(token: str) -> str | None:
 # DB helpers
 # ---------------------------------------------------------------------------
 
-def get_user_by_email(db: Session, email: str) -> User | None:
-    return db.query(User).filter(User.email == email).first()
+def get_user_by_email(db: any, email: str) -> User | None:
+    try:
+        response = supabase.table("users").select("*").eq("email", email).execute()
+        if response.data:
+            return User(**response.data[0])
+        return None
+    except Exception:
+        return None
 
 
-def get_user_by_id(db: Session, user_id: str) -> User | None:
-    return db.query(User).filter(User.id == user_id).first()
+def get_user_by_id(db: any, user_id: str) -> User | None:
+    try:
+        response = supabase.table("users").select("*").eq("id", user_id).execute()
+        if response.data:
+            return User(**response.data[0])
+        return None
+    except Exception:
+        return None

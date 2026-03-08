@@ -10,7 +10,10 @@ import { BuyersPage } from './pages/BuyersPage';
 import { NegotiationPage } from './pages/NegotiationPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { CropAnalysisPage } from './pages/CropAnalysisPage';
+import { AiDiseaseDetectionPage } from './pages/AiDiseaseDetectionPage';
+import { RainForecastPage } from './pages/RainForecastPage';
 import { EnquiriesPage } from './pages/EnquiriesPage';
+import { SoilAnalysisPage } from './pages/SoilAnalysisPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuthStore } from './store/authStore';
 import { useLanguageStore } from './store/languageStore';
@@ -64,6 +67,9 @@ function App() {
           <Route path="/enquiries" element={<EnquiriesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/crop-analysis" element={<CropAnalysisPage />} />
+          <Route path="/ai-disease-detection" element={<AiDiseaseDetectionPage />} />
+          <Route path="/soil-analysis" element={<SoilAnalysisPage />} />
+          <Route path="/rain-forecast" element={<RainForecastPage />} />
         </Route>
       </Routes>
     </div>

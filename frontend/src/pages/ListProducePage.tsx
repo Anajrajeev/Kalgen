@@ -80,15 +80,15 @@ export function ListProducePage() {
             className="inline-flex items-center gap-2 font-bold"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {label('backBtn')}
           </Button>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-AgriNiti-accent-gold/20 rounded-xl flex items-center justify-center">
               <Package className="h-5 w-5 text-AgriNiti-accent-gold" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-AgriNiti-text font-serif leading-tight uppercase tracking-tight">Market Listing</h1>
-              <p className="text-sm text-AgriNiti-text-muted">Post your harvest to reach high-intent verified buyers.</p>
+              <h1 className="text-2xl font-bold text-AgriNiti-text font-serif leading-tight uppercase tracking-tight">{label('marketListingTitle')}</h1>
+              <p className="text-sm text-AgriNiti-text-muted">{label('marketListingSubtitle')}</p>
             </div>
           </div>
         </div>
@@ -98,16 +98,16 @@ export function ListProducePage() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">Commodity</label>
+                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('produceLabel')}</label>
                 <input
                   value={commodity}
                   onChange={(e) => setCommodity(e.target.value)}
                   className="AgriNiti-input w-full"
-                  placeholder="e.g. Wheat"
+                  placeholder={label('allCommodities')}
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">Variety (Optional)</label>
+                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('varietyLabel')}</label>
                 <input
                   value={variety}
                   onChange={(e) => setVariety(e.target.value)}
@@ -119,7 +119,7 @@ export function ListProducePage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">Quantity (Quintals)</label>
+                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('quantityLabelWithUnit')}</label>
                 <input
                   type="number"
                   value={quantity}
@@ -129,7 +129,7 @@ export function ListProducePage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">Asking Price (₹/qtl)</label>
+                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('askingPriceLabel')}</label>
                 <div className="relative">
                   <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-AgriNiti-text-muted" />
                   <input
@@ -145,7 +145,7 @@ export function ListProducePage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">District</label>
+                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('selectDistrict')}</label>
                 <input
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
@@ -154,7 +154,7 @@ export function ListProducePage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">State</label>
+                <label className="text-xs font-bold text-AgriNiti-text-muted uppercase tracking-wider mb-2 block">{label('selectState')}</label>
                 <input
                   value={state}
                   onChange={(e) => setState(e.target.value)}
@@ -167,7 +167,7 @@ export function ListProducePage() {
             <div className="p-4 bg-AgriNiti-primary/[0.03] border border-AgriNiti-primary/20 rounded-2xl flex gap-4">
               <Sparkles className="h-6 w-6 text-AgriNiti-primary flex-shrink-0" />
               <p className="text-xs text-AgriNiti-text leading-relaxed">
-                <span className="font-bold">AI Insight:</span> After listing, our semantic engine will match you with buyers who have previously requested similar variety and quality in your region.
+                <span className="font-bold">{label('aiInsightTitle')}:</span> {label('aiInsightMarketListing')}
               </p>
             </div>
 
@@ -177,7 +177,7 @@ export function ListProducePage() {
                 disabled={!commodity || !quantity || !price || !district || loading}
                 className="w-full bg-AgriNiti-accent-gold hover:bg-AgriNiti-accent-gold/90 text-white py-4 text-sm font-bold uppercase tracking-widest shadow-lg shadow-AgriNiti-accent-gold/20 disabled:opacity-50"
               >
-                {loading ? 'Submitting to AgriNiti...' : 'Confirm and Find Buyers'}
+                {loading ? label('submittingToAgriNiti') : label('confirmFindBuyersBtn')}
               </Button>
             </div>
           </div>

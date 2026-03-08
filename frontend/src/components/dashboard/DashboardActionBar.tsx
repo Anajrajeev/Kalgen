@@ -2,10 +2,12 @@ import { AlertTriangle, IndianRupee, ScrollText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../ui/Card';
 import { useLanguageStore } from '../../store/languageStore';
+import { useTranslation } from '../../services/useTranslation';
 import { labels } from '../../i18n/labels';
 
 export function DashboardActionBar() {
   const navigate = useNavigate();
+  const { label } = useTranslation();
   const lang = useLanguageStore((s) => s.selectedLanguage);
   const copy = labels[lang];
 
