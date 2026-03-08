@@ -324,25 +324,7 @@ export function MarketplacePage() {
             </div>
           </div>
 
-          <Card className="p-6 bg-AgriNiti-primary/5 border border-AgriNiti-primary/20 rounded-3xl overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-              <Truck className="h-32 w-32" />
-            </div>
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
-              <div className="flex items-center gap-6">
-                <div className="h-16 w-16 bg-AgriNiti-primary/20 rounded-3xl flex items-center justify-center shrink-0">
-                  <Truck className="h-8 w-8 text-AgriNiti-primary" />
-                </div>
-                <div>
-                  <h5 className="text-2xl font-black text-AgriNiti-text font-serif">{label('deepLogisticsTitle')}</h5>
-                  <p className="text-sm text-AgriNiti-text-muted mt-1">{label('deepLogisticsDesc')}</p>
-                </div>
-              </div>
-              <Button className="bg-AgriNiti-primary text-white font-black px-12 py-5 rounded-2xl shrink-0 shadow-lg shadow-AgriNiti-primary/20 hover:scale-[1.02] transition-all" onClick={() => navigate('/business-assistance')}>
-                {label('optimizeRouteBtn')}
-              </Button>
-            </div>
-          </Card>
+
         </div>
       </div>
     </div>
