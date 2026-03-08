@@ -2,38 +2,28 @@
 
 A comprehensive web-based agricultural decision support and trusted trading platform that connects farmers with buyers, provides AI-powered crop intelligence, and offers complete logistics management solutions.
 
-## 🌟 Features
+## 🌟 Core Functionalities
 
-### 🤖 AI-Powered Crop Intelligence
-- **Multimodal Interaction**: Voice, text, and image inputs for comprehensive farm analysis
-- **Disease Detection**: Automated identification of crop diseases through image recognition
-- **Soil Analysis**: AI-driven soil health assessment and recommendations
-- **Predictive Models**: Weather and yield predictions for better planning
-- **Personalized Recommendations**: Tailored advice based on crop and location
+### 🤖 Multimodal AI Advisory
+- **Disease & Soil Detection**: Upload images for automated crop disease diagnosis and soil health analysis.
+- **Voice-Powered RAG Advisor**: Ask farming questions via voice (or text) in your native language and get AI responses grounded in agricultural knowledge bases.
+- **Personalized Recommendations**: Tailored farming advice based on your specific crop and geographic location.
 
-### 🌾 Complete Marketplace
-- **Live Market Prices**: Real-time crop prices with search and filtering
-- **Produce Listing**: Easy listing of agricultural produce with quantity and pricing
-- **Browse Sellers**: Connect with verified sellers across India
-- **Trust-Based System**: Seller ratings, verification, and quality indicators
-- **Direct Messaging**: Built-in chat system for buyer-seller communication
+### 🌾 End-to-End Marketplace
+- **Live Mandi Intelligence**: Browse real-time wholesale prices across India with smart search and price comparison.
+- **Smart Trading**: Farmers can list produce with detailed info; buyers can post requirements. AI ranks the most relevant matches.
+- **Structured Negotiation**: In-platform tools for price and quantity negotiation between buyers and sellers.
+- **Lead Management**: Track enquiries and maintain communication through integrated messaging.
 
-### 🚚 Business Assistance & Logistics
-- **Shipment Tracking**: Real-time tracking of agricultural shipments
-- **Transport Booking**: Book transportation with budget and route planning
-- **Warehouse Management**: Find and book warehouse space for storage
-- **Route Optimization**: Smart logistics planning for cost efficiency
+### � Climate & Yield Intelligence
+- **Precision Rain Forecasting**: Detailed precipitation probabilities, heatmaps, and weekly intensity trends for agricultural planning.
+- **Yield Prediction**: AI models estimate crop output by analyzing historical patterns and localized weather data.
+- **Temperature Alerts**: Stay ahead of climate risks with 30-day temperature trends and heatwave warnings.
 
-### 🌍 Multilingual Support
-- **English, Hindi, Marathi**: Complete platform localization
-- **Real-time Translation**: Seamless communication across languages
-- **Localized Content**: Region-specific agricultural information
-
-### 📊 Dashboard & Analytics
-- **Unified Farm Intelligence**: Comprehensive overview of farm operations
-- **Weather Integration**: Real-time weather data and forecasts
-- **Market Trends**: Price trends and market analysis
-- **Actionable Insights**: Data-driven recommendations for farmers
+### � Logistics & Support
+- **Shipment Tracking**: Comprehensive interface to monitor the movement of agricultural goods in real-time.
+- **Govt. Schemes Access**: Dedicated portal to find and understand relevant government agricultural schemes and subsidies.
+- **Multilingual Localization**: Complete support for English, Hindi, and Marathi with real-time translation for seamless communication.
 
 ## 🏗️ Architecture
 
