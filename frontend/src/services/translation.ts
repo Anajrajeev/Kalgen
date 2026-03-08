@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ai-bharath.us-east-1.elasticbeanstalk.com';
 
 export interface TranslationRequest {
     text: string;

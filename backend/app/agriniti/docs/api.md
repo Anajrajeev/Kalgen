@@ -1,7 +1,7 @@
 # AgriNiti Marketplace — API Documentation
 
-> **Base URL:** `http://localhost:8000`  
-> **Interactive Docs:** `http://localhost:8000/docs` (Swagger UI)  
+> **Base URL:** `http://ai-bharath.us-east-1.elasticbeanstalk.com`  
+> **Interactive Docs:** `http://ai-bharath.us-east-1.elasticbeanstalk.com/docs` (Swagger UI)  
 > **Auth:** All protected endpoints require `Authorization: Bearer <token>` header.
 
 ---

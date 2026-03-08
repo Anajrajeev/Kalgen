@@ -141,7 +141,7 @@ OPENWEATHER_API_KEY=your_openweather_key
 WEATHERAPI_KEY=your_weatherapi_key
 
 # Frontend Configuration
-VITE_API_BASE_URL=http://localhost:8000
+VITE_API_BASE_URL=http://ai-bharath.us-east-1.elasticbeanstalk.com
 ```
 
 ### **API Key Setup**
@@ -223,7 +223,7 @@ python test_weather_apis.py
 
 ### **4. Access Application**
 - **Rain Forecast**: http://localhost:3000/rain-forecast
-- **Weather APIs**: http://localhost:8000/docs
+- **Weather APIs**: http://ai-bharath.us-east-1.elasticbeanstalk.com/docs
 
 ---
 
@@ -292,7 +292,7 @@ python test_weather_apis.py
 
 ### **Debug Tools**
 - **Service Status**: `/weather/service-status`
-- **API Documentation**: http://localhost:8000/docs
+- **API Documentation**: http://ai-bharath.us-east-1.elasticbeanstalk.com/docs
 - **Test Script**: `python test_weather_apis.py`
 - **Browser Console**: Check for frontend errors
 

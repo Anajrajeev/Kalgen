@@ -3,7 +3,7 @@
  * Handles API calls to weather backend for real-time data
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://ai-bharath.us-east-1.elasticbeanstalk.com';
 
 export interface WeatherData {
   timestamp: string;
@@ -140,11 +140,11 @@ class WeatherService {
     try {
       const response = await fetch(`${this.baseUrl}/weather/current?location=${encodeURIComponent(location)}`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || `HTTP ${response.status}`);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error fetching current weather:', error);
@@ -159,11 +159,11 @@ class WeatherService {
     try {
       const response = await fetch(`${this.baseUrl}/weather/rain-forecast?location=${encodeURIComponent(location)}&days=${days}`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || `HTTP ${response.status}`);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error fetching rain forecast:', error);
@@ -186,14 +186,14 @@ class WeatherService {
         region: region,
         season: season
       });
-      
+
       const response = await fetch(`${this.baseUrl}/weather/yield-prediction?${params}`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || `HTTP ${response.status}`);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error fetching yield prediction:', error);
@@ -208,11 +208,11 @@ class WeatherService {
     try {
       const response = await fetch(`${this.baseUrl}/weather/weekly-forecast?location=${encodeURIComponent(location)}&weeks=${weeks}`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || `HTTP ${response.status}`);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error fetching weekly forecast:', error);
@@ -228,11 +228,11 @@ class WeatherService {
     try {
       const response = await fetch(`${this.baseUrl}/weather/rain-heatmap?location=${encodeURIComponent(location)}&year=${year}`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || `HTTP ${response.status}`);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error fetching rain heatmap:', error);
@@ -247,11 +247,11 @@ class WeatherService {
     try {
       const response = await fetch(`${this.baseUrl}/weather/temperature-forecast?location=${encodeURIComponent(location)}&days=${days}`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || `HTTP ${response.status}`);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error fetching temperature forecast:', error);
@@ -268,14 +268,14 @@ class WeatherService {
         region: region,
         season: season
       });
-      
+
       const response = await fetch(`${this.baseUrl}/weather/yield-analysis?${params}`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || `HTTP ${response.status}`);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error fetching yield analysis:', error);
@@ -290,11 +290,11 @@ class WeatherService {
     try {
       const response = await fetch(`${this.baseUrl}/weather/service-status`);
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      
+
       return {
         success: true,
         data: result
@@ -312,7 +312,7 @@ class WeatherService {
   formatRainIntensity(intensity: string): string {
     const intensityMap = {
       'No Rain': 'No Rain',
-      'Low Rain': 'Low Rain', 
+      'Low Rain': 'Low Rain',
       'Medium Rain': 'Medium Rain',
       'High Rain': 'High Rain'
     };
@@ -341,7 +341,7 @@ class WeatherService {
 
   formatTemperature(temp: number, unit: 'C' | 'F' = 'C'): string {
     if (unit === 'F') {
-      return `${Math.round(temp * 9/5 + 32)}°F`;
+      return `${Math.round(temp * 9 / 5 + 32)}°F`;
     }
     return `${Math.round(temp)}°C`;
   }

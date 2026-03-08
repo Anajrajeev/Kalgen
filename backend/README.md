@@ -44,7 +44,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 - `GET /health` - Health check endpoint
 
 ## API Documentation
-Once running, visit `http://localhost:8000/docs` for interactive API documentation.
+Once running, visit `http://ai-bharath.us-east-1.elasticbeanstalk.com/docs` for interactive API documentation.
 
 ## Features
 - JWT authentication

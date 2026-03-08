@@ -93,8 +93,8 @@ A comprehensive web-based agricultural decision support and trusted trading plat
 
 ### 🌐 Access the Application
 - **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8000
-- **API Documentation**: http://localhost:8000/docs
+- **Backend API**: http://ai-bharath.us-east-1.elasticbeanstalk.com
+- **API Documentation**: http://ai-bharath.us-east-1.elasticbeanstalk.com/docs
 
 ## 📱 Platform Pages
 

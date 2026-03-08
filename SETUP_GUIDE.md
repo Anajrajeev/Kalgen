@@ -96,9 +96,9 @@ Ai for Bharat/
    - **Linux/Mac**: Run `chmod +x start.sh && ./start.sh`
 
 5. **Verify Backend is Running**
-   - Visit `http://localhost:8000`
-   - Check `http://localhost:8000/docs` for API documentation
-   - Test `http://localhost:8000/health`
+   - Visit `http://ai-bharath.us-east-1.elasticbeanstalk.com`
+   - Check `http://ai-bharath.us-east-1.elasticbeanstalk.com/docs` for API documentation
+   - Test `http://ai-bharath.us-east-1.elasticbeanstalk.com/health`
 
 ### 3. Frontend Setup
 
@@ -120,7 +120,7 @@ Ai for Bharat/
 4. **Configure Frontend**
    Edit `.env`:
    ```env
-   VITE_API_BASE_URL=http://localhost:8000
+   VITE_API_BASE_URL=http://ai-bharath.us-east-1.elasticbeanstalk.com
    ```
 
 5. **Start the Frontend**
@@ -130,7 +130,7 @@ Ai for Bharat/
 
 6. **Access the Application**
    - Frontend: `http://localhost:5173`
-   - Backend API: `http://localhost:8000`
+   - Backend API: `http://ai-bharath.us-east-1.elasticbeanstalk.com`
 
 ## 🔐 Authentication Flow
 
