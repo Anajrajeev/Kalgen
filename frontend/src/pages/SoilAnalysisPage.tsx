@@ -100,8 +100,15 @@ export function SoilAnalysisPage() {
                                         >
                                             <p className="font-semibold text-base mb-2"><TranslatedText text={message.content} /></p>
                                             {message.file && (
-                                                <div className="mt-2 text-xs italic opacity-75 inline-flex items-center gap-1">
-                                                    <ImageIcon className="h-3 w-3" /> {label('imageAttached')}
+                                                <div className="mt-3 flex flex-col gap-2">
+                                                    <img
+                                                        src={URL.createObjectURL(message.file)}
+                                                        alt="Uploaded soil"
+                                                        className="h-40 w-40 object-cover rounded-lg border border-white/20 shadow-sm"
+                                                    />
+                                                    <div className="text-xs italic opacity-75 inline-flex items-center gap-1">
+                                                        <ImageIcon className="h-3 w-3" /> {label('imageAttached')}
+                                                    </div>
                                                 </div>
                                             )}
                                             {message.soilData && (
