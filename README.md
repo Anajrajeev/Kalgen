@@ -92,9 +92,13 @@ A comprehensive web-based agricultural decision support and trusted trading plat
    - Set up API keys for external services
 
 ### 🌐 Access the Application
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://ai-bharath.us-east-1.elasticbeanstalk.com
-- **API Documentation**: http://ai-bharath.us-east-1.elasticbeanstalk.com/docs
+- **Production Frontend**: [https://agriniti.vercel.app](https://agriniti.vercel.app)
+- **Production Backend API**: [http://ai-bharath.us-east-1.elasticbeanstalk.com](http://ai-bharath.us-east-1.elasticbeanstalk.com)
+- **API Documentation**: [http://ai-bharath.us-east-1.elasticbeanstalk.com/docs](http://ai-bharath.us-east-1.elasticbeanstalk.com/docs)
+- **Local Frontend**: http://localhost:5173
+- **Local Backend**: http://localhost:8000
+
+> **Note**: The frontend uses a secure proxy (`/api-proxy`) to communicate with the AWS backend to resolve Mixed Content and SSL constraints.
 
 ## 📱 Platform Pages
 
