@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { useLanguageStore } from '../store/languageStore';
 import { labels } from '../i18n/labels';
+import logoImg from '/logo.png';
 
 type AuthLayoutProps = {
   children: ReactNode;
@@ -15,9 +16,9 @@ export function AuthLayout({ children }: AuthLayoutProps) {
       <div className="w-full max-w-7xl flex flex-col gap-16">
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img 
-              src="/logo.png" 
-              alt="AgriNiti Logo" 
+            <img
+              src={logoImg}
+              alt="AgriNiti Logo"
               className="h-12 w-12 rounded-lg"
             />
             <div>

@@ -2,6 +2,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { User, LogOut } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useState, useEffect } from 'react';
+import logoImg from '/logo.png';
 
 export function DashboardLayout() {
   const navigate = useNavigate();
@@ -22,9 +23,9 @@ export function DashboardLayout() {
       <div className="w-full max-w-7xl">
         <header className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img 
-              src="/logo.png" 
-              alt="AgriNiti Logo" 
+            <img
+              src={logoImg}
+              alt="AgriNiti Logo"
               className="h-10 w-10 rounded-lg"
             />
             <div>
