@@ -17,7 +17,7 @@ type LanguageCardConfig = {
 const LANGUAGES: LanguageCardConfig[] = [
   { code: 'en', title: 'English', native: 'English' },
   { code: 'hi', title: 'Hindi', native: 'हिंदी' },
-  { code: 'mr', title: 'Marathi', native: 'ಮರಾಠಿ' },
+  { code: 'mr', title: 'Marathi', native: 'मराठी' },
   { code: 'kn', title: 'Kannada', native: 'ಕನ್ನಡ' },
   { code: 'ta', title: 'Tamil', native: 'தமிழ்' },
   { code: 'te', title: 'Telugu', native: 'తెలుగు' },
