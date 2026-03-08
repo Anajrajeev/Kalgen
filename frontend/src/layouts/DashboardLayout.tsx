@@ -2,7 +2,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { User, LogOut } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useState, useEffect } from 'react';
-import logoImg from '/logo.png';
+import logoImg from '../assets/logo.png';
 
 export function DashboardLayout() {
   const navigate = useNavigate();

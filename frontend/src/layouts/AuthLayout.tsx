@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { useLanguageStore } from '../store/languageStore';
 import { labels } from '../i18n/labels';
-import logoImg from '/logo.png';
+import logoImg from '../assets/logo.png';
 
 type AuthLayoutProps = {
   children: ReactNode;
