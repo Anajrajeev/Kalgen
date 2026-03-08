@@ -1,5 +1,6 @@
 """RAG orchestrator: retrieve context from Chroma and call Bedrock."""
 
+import re
 from typing import List
 from .embedder import Embedder
 from .store import ChromaStore
@@ -13,16 +14,26 @@ class RAGSystem:
         self.bedrock = BedrockClient() if require_bedrock else None
 
     def _clean_text(self, text: str) -> str:
-        """Remove special characters and clean up text for better readability."""
-        import re
-        # Remove extra quotes and special characters
-        cleaned = re.sub(r'["\']', '', text)  # Remove various quotes
-        cleaned = re.sub(r'[^\w\s\.\,\-\(\)]', '', cleaned)  # Keep only letters, numbers, spaces, basic punctuation
+        """Clean text to remove special characters"""
+        if not text:
+            return ""
+        
+        # Very minimal cleaning - just remove obvious problematic characters
+        cleaned = text
+        
+        # Remove URLs only
+        cleaned = re.sub(r'https?://[^\s]+', '', cleaned)
+        
+        # Remove only truly problematic characters
+        cleaned = re.sub(r'[^\w\s\.\,\-\(\)\n]', '', cleaned)
+        
         # Clean up multiple spaces
         cleaned = re.sub(r'\s+', ' ', cleaned).strip()
-        # Fix any double punctuation
-        cleaned = re.sub(r'\.+', '.', cleaned)
-        cleaned = re.sub(r'\,+', ',', cleaned)
+        
+        # If result is empty after cleaning, return a basic answer
+        if len(cleaned) < 5:
+            return "Based on the available agricultural information, please provide more details about your specific farming question."
+        
         return cleaned
 
     def ingest(self, ids: List[str], texts: List[str]):
@@ -41,7 +52,7 @@ class RAGSystem:
 
         # build context string using truncated snippets to avoid huge prompts
         snippets = []
-        max_per_doc = 500  # characters per document
+        max_per_doc = 350  # Reduced from 500 to 350 characters
         for r in results:
             doc = r['document']
             if len(doc) > max_per_doc:
@@ -50,9 +61,9 @@ class RAGSystem:
             snippets.append(doc)
         context = "\n".join(snippets)
 
-        # Limit context to ~6000 characters to stay within 8192 token limit
-        # Rough estimate: 1 token ≈ 4 characters
-        max_context_chars = 6000
+        # Limit context to ~700 characters to stay within 8192 token limit
+        # Reduced from 6000 to 700 characters
+        max_context_chars = 700
         if len(context) > max_context_chars:
             context = context[:max_context_chars] + "..."
 
@@ -63,14 +74,11 @@ class RAGSystem:
             # Construct a user‑friendly prompt that requests a short, simple
             # explanation suitable for a layperson or farmer.
             prompt = (
-                "You are a helpful agricultural assistant that answers questions in plain, simple "
-                "language that any farmer can understand. Based on the provided context, give a clear, "
-                "concise answer to the farmer's question. Focus on the most relevant information. "
-                "IMPORTANT: Use only standard letters, numbers, and basic punctuation. "
-                "Avoid any special characters, quotes, or formatting symbols.\n\n"
+                "Based on the provided context, answer the farmer's question directly. "
+                "Give only the answer in 1-2 sentences. Do not include any instructions or explanations.\n\n"
                 f"Context:\n{context}\n\n"
                 f"Question: {query_text}\n\n"
-                "Provide a helpful answer in simple terms:"
+                "Answer:"
             )
             print(f"RAG: sending prompt to Bedrock:\n{prompt[:200]}...")
             raw_answer = self.bedrock.generate_text(model_id=model_id, prompt=prompt)

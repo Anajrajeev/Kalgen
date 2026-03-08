@@ -13,6 +13,9 @@ from app.agriniti.routers.buy_requests import router as buy_requests_router
 from app.agriniti.routers.rank import router as rank_router
 from app.agriniti.routers.ratings import router as ratings_router
 from app.routers.ai_advisory import router as ai_advisory_router
+from app.routers.speech_advisory import router as speech_advisory_router
+from app.routers.simple_speech_advisory import router as simple_speech_advisory_router
+from app.routers.soil_advisory import router as soil_advisory_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -64,6 +67,8 @@ app.include_router(ratings_router, prefix="/agriniti")
 
 # AI-Advisory RAG
 app.include_router(ai_advisory_router, prefix="/ai-advisory", tags=["AI Advisory"])
+app.include_router(simple_speech_advisory_router, prefix="/speech-advisory", tags=["Speech Advisory"])
+app.include_router(soil_advisory_router, prefix="/soil-advisory", tags=["Soil Advisory"])
 
 @app.get("/")
 async def root():
