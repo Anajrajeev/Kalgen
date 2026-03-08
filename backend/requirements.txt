@@ -1,21 +1,32 @@
+# Core FastAPI dependencies
 fastapi>=0.109.2
 uvicorn[standard]>=0.24.0
 python-dotenv>=1.0.0
+python-multipart>=0.0.6
+
+# Database and ORM
 supabase>=2.28.0
+sqlalchemy>=2.0.23
+
+# Authentication and Security
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
-python-multipart>=0.0.6
+email-validator>=2.0.0
+
+# Data Validation
 pydantic>=2.6.4
 pydantic-settings>=2.2.1
+
+# HTTP Client
 httpx>=0.27.0
-email-validator>=2.0.0
+
+# AWS Services (for transcription, translation, TTS)
 boto3>=1.40.11
 amazon-transcribe>=0.6.2
-sqlalchemy>=2.0.23
-chromadb>=0.5.0
+
+# AI and Vector Database
 google-generativeai>=0.8.0
+chromadb>=0.5.0
+
+# Location services (if used)
 geopy>=2.4.1
-pdfplumber>=0.11.0
-opentelemetry-api>=1.20.0
-opentelemetry-sdk>=1.20.0
-opentelemetry-exporter-otlp>=0.41b0

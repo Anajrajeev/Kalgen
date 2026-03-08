@@ -1,0 +1,38 @@
+# Exclude development and testing files
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Exclude development scripts
+debug_rag.py
+populate_local_sqlite.py
+inspect_sqlalchemy.py
+sync_local.py
+brute_pooler.py
+
+# Exclude documentation and knowledge files
+Knowledge/
+*.md
+backend.zip
+
+# Exclude test files
+test_*.py
+*_test.py
